@@ -9,7 +9,8 @@
 
 #include "representation/LogicFormula.hh"
 #include "representation/Interval.hh"
-#include "Chase.hh"
+
+#include "representation/Operators.hh"
 
 namespace chase {
 

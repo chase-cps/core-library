@@ -9,7 +9,9 @@
 
 
 #include "ChaseObject.hh"
-#include "Chase.hh"
+#include "representation/Name.hh"
+#include "representation/Specification.hh"
+#include "representation/Value.hh"
 
 #include <map>
 #include <set>

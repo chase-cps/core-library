@@ -6,9 +6,9 @@
  */
 #include <utility>
 
-#include "chase/representation/Contract.hh"
-#include "chase/utilities/ClonedDeclarationVisitor.hh"
-#include "chase/utilities/Factory.hh"
+#include "representation/Contract.hh"
+#include "utilities/ClonedDeclarationVisitor.hh"
+#include "utilities/Factory.hh"
 
 using namespace chase;
 

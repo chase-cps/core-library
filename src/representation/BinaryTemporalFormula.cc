@@ -4,7 +4,8 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/BinaryTemporalFormula.hh"
+#include "representation/BinaryTemporalFormula.hh"
+#include "representation/Operators.hh"
 
 using namespace chase;
 

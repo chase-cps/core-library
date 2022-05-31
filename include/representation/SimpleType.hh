@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "chase/representation/Type.hh"
+#include "representation/Type.hh"
 
 namespace chase {
 

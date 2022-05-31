@@ -9,7 +9,7 @@
 #pragma once
 
 #include "representation/CustomType.hh"
-#include "chase/representation/Constant.hh"
+#include "representation/Constant.hh"
 
 namespace chase {
 

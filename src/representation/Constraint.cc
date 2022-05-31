@@ -5,7 +5,7 @@
  *
  */
 
-#include "chase/representation/Constraint.hh"
+#include "representation/Constraint.hh"
 
 using namespace chase;
 

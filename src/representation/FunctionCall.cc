@@ -5,8 +5,8 @@
  *
  */
 
-#include "chase/representation/FunctionCall.hh"
-#include "chase/representation/Function.hh"
+#include "representation/FunctionCall.hh"
+#include "representation/Function.hh"
 
 using namespace chase;
 

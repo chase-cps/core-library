@@ -5,7 +5,8 @@
  *
  */
 
-#include "chase/representation/Graph.hh"
+#include "representation/Graph.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

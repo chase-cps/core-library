@@ -6,7 +6,8 @@
  */
 
 
-#include "../../../include/chase/representation/ComponentDefinition.hh"
+#include "representation/Component.hh"
+#include "representation/ComponentDefinition.hh"
 #include "representation/Contract.hh"
 
 using namespace chase;

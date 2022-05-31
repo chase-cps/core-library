@@ -5,7 +5,7 @@
  *
  */
 
-#include "chase/representation/Function.hh"
+#include "representation/Function.hh"
 
 using namespace chase;
 

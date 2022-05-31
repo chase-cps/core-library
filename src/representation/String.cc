@@ -6,7 +6,7 @@
  */
 
 
-#include "chase/representation/String.hh"
+#include "representation/String.hh"
 
 using namespace chase;
 

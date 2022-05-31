@@ -4,7 +4,8 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/UnaryTemporalFormula.hh"
+#include "representation/UnaryTemporalFormula.hh"
+#include "representation/Operators.hh"
 
 using namespace chase;
 
@@ -49,7 +50,7 @@ int UnaryTemporalFormula::accept_visitor(chase::BaseVisitor &v) {
 }
 
 std::string UnaryTemporalFormula::getString() {
-    std::string ret(to_string(_op));
+    std::string ret(std::to_string(_op));
     if(_interval != nullptr)
         ret += _interval->getString();
     ret += "(";

@@ -5,8 +5,8 @@
  *
  */
 
-#include "chase/representation/Distribution.hh"
-#include "chase/representation/Value.hh"
+#include "representation/Distribution.hh"
+#include "representation/Value.hh"
 
 using namespace chase;
 

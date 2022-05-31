@@ -6,9 +6,9 @@
  */
 
 
-#include "chase/representation/Interval.hh"
-#include "chase/representation/Integer.hh"
-#include "chase/representation/Real.hh"
+#include "representation/Interval.hh"
+#include "representation/Integer.hh"
+#include "representation/Real.hh"
 
 using namespace chase;
 

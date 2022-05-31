@@ -8,7 +8,6 @@
 #pragma once
 
 #include "representation/ChaseObject.hh"
-#include "Chase.hh"
 #include "Specification.hh"
 #include "Scope.hh"
 

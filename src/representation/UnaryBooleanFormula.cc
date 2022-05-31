@@ -4,8 +4,8 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/UnaryBooleanFormula.hh"
-
+#include "representation/UnaryBooleanFormula.hh"
+#include "representation/Operators.hh"
 
 using namespace chase;
 
@@ -38,7 +38,7 @@ int UnaryBooleanFormula::accept_visitor(chase::BaseVisitor &v) {
 }
 
 std::string UnaryBooleanFormula::getString() {
-    std::string ret = to_string(_op);
+    std::string ret = std::to_string(_op);
     ret += "(";
     ret += _op1->getString();
     ret += ")";

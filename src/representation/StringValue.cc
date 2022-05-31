@@ -6,8 +6,8 @@
  */
 
 
-#include "chase/representation/StringValue.hh"
-#include "chase/representation/String.hh"
+#include "representation/StringValue.hh"
+#include "representation/String.hh"
 
 using namespace chase;
 

@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "chase/representation/Graph.hh"
+#include "representation/Graph.hh"
 using namespace chase;
 
 Vertex::Vertex(Name *name) :

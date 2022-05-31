@@ -9,7 +9,6 @@
 
 #include "Operators.hh"
 #include "LogicFormula.hh"
-#include "Chase.hh"
 
 #include <vector>
 

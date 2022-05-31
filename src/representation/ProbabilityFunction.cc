@@ -5,8 +5,8 @@
  *
  */
 
-#include "chase/representation/ProbabilityFunction.hh"
-#include "chase/representation/Real.hh"
+#include "representation/ProbabilityFunction.hh"
+#include "representation/Real.hh"
 
 using namespace chase;
 

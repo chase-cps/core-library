@@ -6,7 +6,7 @@
  */
 
 
-#include "chase/representation/CustomType.hh"
+#include "representation/CustomType.hh"
 
 using namespace chase;
 

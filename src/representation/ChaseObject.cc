@@ -8,7 +8,7 @@
  *
  */
 
-#include <chase/representation/ModalFormula.hh>
+#include "representation/ModalFormula.hh"
 #include "representation/ChaseObject.hh"
 
 using namespace chase;

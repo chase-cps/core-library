@@ -5,10 +5,10 @@
  *
  */
 
-#include "chase/representation/DesignProblem.hh"
-#include "chase/representation/Library.hh"
-#include "chase/representation/Contract.hh"
-#include "chase/representation/System.hh"
+#include "representation/DesignProblem.hh"
+#include "representation/Library.hh"
+#include "representation/Contract.hh"
+#include "representation/System.hh"
 
 using namespace chase;
 

@@ -6,7 +6,7 @@
  */
 
 
-#include "chase/utilities/GroupTemporalOperatorsVisitor.hh"
+#include "utilities/GroupTemporalOperatorsVisitor.hh"
 #include "representation.hh"
 
 #include "utilities/Factory.hh"

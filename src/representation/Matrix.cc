@@ -5,11 +5,11 @@
  *
  */
 
-#include "chase/representation/Matrix.hh"
-#include "chase/representation/Identifier.hh"
-#include "chase/representation/Integer.hh"
-#include "chase/representation/Real.hh"
-#include "chase/representation/Boolean.hh"
+#include "representation/Matrix.hh"
+#include "representation/Identifier.hh"
+#include "representation/Integer.hh"
+#include "representation/Real.hh"
+#include "representation/Boolean.hh"
 
 using namespace chase;
 

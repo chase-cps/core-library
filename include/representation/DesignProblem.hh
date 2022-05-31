@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "chase/representation/ChaseObject.hh"
+#include "representation/ChaseObject.hh"
 #include <set>
 
 namespace chase {

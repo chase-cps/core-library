@@ -4,7 +4,7 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/LargeBooleanFormula.hh"
+#include "representation/LargeBooleanFormula.hh"
 
 using namespace chase;
 

@@ -4,7 +4,7 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/utilities/UtilityFunctions.hh"
+#include "utilities/UtilityFunctions.hh"
 
 using namespace chase;
 

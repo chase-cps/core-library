@@ -6,7 +6,7 @@
  */
 
 
-#include "../../../include/chase/utilities/LogicNotNormalizationVisitor.hh"
+#include "utilities/LogicNotNormalizationVisitor.hh"
 #include "representation.hh"
 #include "utilities/Factory.hh"
 #include "representation/Expression.hh"

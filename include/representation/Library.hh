@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "chase/representation/Scope.hh"
+#include "representation/Scope.hh"
 #include <set>
 
 namespace chase {

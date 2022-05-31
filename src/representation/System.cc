@@ -8,8 +8,8 @@
 
 #include <utility>
 
-#include "chase/representation/System.hh"
-#include "chase/utilities/ClonedDeclarationVisitor.hh"
+#include "representation/System.hh"
+#include "utilities/ClonedDeclarationVisitor.hh"
 
 using namespace chase;
 

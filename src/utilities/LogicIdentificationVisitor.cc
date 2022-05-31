@@ -6,7 +6,7 @@
  */
 
 
-#include "../../../include/chase/utilities/LogicIdentificationVisitor.hh"
+#include "utilities/LogicIdentificationVisitor.hh"
 #include "representation.hh"
 
 using namespace chase;

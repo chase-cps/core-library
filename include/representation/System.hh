@@ -12,7 +12,7 @@
 #include "representation/Contract.hh"
 #include "representation/Component.hh"
 
-#include "chase/utilities.hh"
+#include "utilities.hh"
 
 namespace chase {
 

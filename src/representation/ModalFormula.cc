@@ -4,7 +4,7 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/ModalFormula.hh"
+#include "representation/ModalFormula.hh"
 
 using namespace chase;
 

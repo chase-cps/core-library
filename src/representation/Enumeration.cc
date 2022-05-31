@@ -6,7 +6,7 @@
  */
 
 
-#include "chase/representation/Enumeration.hh"
+#include "representation/Enumeration.hh"
 
 #include "utilities/Factory.hh"
 

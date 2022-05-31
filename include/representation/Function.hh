@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "chase/representation/DataDeclaration.hh"
+#include "representation/DataDeclaration.hh"
 #include <vector>
 
 namespace chase {

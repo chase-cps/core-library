@@ -5,7 +5,7 @@
  *
  */
 
-#include "chase/representation/QuantifiedFormula.hh"
+#include "representation/QuantifiedFormula.hh"
 
 using namespace chase;
 

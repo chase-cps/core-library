@@ -4,7 +4,7 @@
  *              This project is released under the 3-Clause BSD License.
  *
  */
-#include "chase/representation/Specification.hh"
+#include "representation/Specification.hh"
 
 using namespace chase;
 

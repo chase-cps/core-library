@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include "Chase.hh"
-#include "chase/representation/LogicFormula.hh"
+#include "representation/LogicFormula.hh"
+#include "representation/Type.hh"
+#include "representation/Value.hh"
 
 
 namespace chase {

@@ -6,6 +6,7 @@
  */
 
 #include "utilities/GraphUtilities.hh"
+#include "representation.hh"
 #include <algorithm>
 
 using namespace chase;

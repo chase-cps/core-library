@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "chase/representation/IntegerValue.hh"
-#include "chase/representation/RealValue.hh"
+#include "representation/IntegerValue.hh"
+#include "representation/RealValue.hh"
 
 namespace chase {
 

@@ -5,7 +5,7 @@
  *
  */
 
-#include "chase/representation/BooleanConstant.hh"
+#include "representation/BooleanConstant.hh"
 
 using namespace chase;
 

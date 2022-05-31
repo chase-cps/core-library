@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "chase/representation.hh"
-#include "chase/utilities.hh"
+#include "representation.hh"
+#include "utilities.hh"
 
 #include <cstdint>

@@ -102,24 +102,24 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/core/include/utilities
     )
 
-add_library(chasecore ${chase_library})
-set_target_properties(chasecore PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_library(chase ${chase_library})
+set_target_properties(chase PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
-set(LIB_INSTALL_DIR core/lib  CACHE STRING ¨¨)
-set(INCLUDE_INSTALL_DIR core  CACHE STRING ¨¨)
+set(LIB_INSTALL_DIR chase/lib  CACHE STRING ¨¨)
+set(INCLUDE_INSTALL_DIR chase  CACHE STRING ¨¨)
 
 
 
 
 
 install(
-    DIRECTORY ${PROJECT_SOURCE_DIR}/core/include
-    DESTINATION ${INCLUDE_INSTALL_DIR}
+    DIRECTORY ${PROJECT_SOURCE_DIR}/core/include/
+    DESTINATION ${INCLUDE_INSTALL_DIR}/include
     )
 
 install(
-    TARGETS chasecore
+    TARGETS chase
     EXPORT chaseTargets
     DESTINATION ${LIB_INSTALL_DIR}
     )

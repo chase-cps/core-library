@@ -1,7 +1,7 @@
 ###############################################################################
-# CMake file for the third party dependencies for CHASE.
+# CMake file for the CHASE base frontends.
 # @author Michele Lora
 ###############################################################################
 
-add_subdirectory(antlr4)
-add_subdirectory(pybind11)
+add_subdirectory(dsl_frontend)
+#add_subdirectory(logics_frontend)

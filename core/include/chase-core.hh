@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "representation.hh"
 #include "utilities.hh"
+#include "representation.hh"
 
 #include <cstdint>

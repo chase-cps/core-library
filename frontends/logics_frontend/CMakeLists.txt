@@ -27,8 +27,8 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 add_library(chase_ll
-        ${Logics_PARSER_SRCS}
-        ${Logics_SRC_DIR}/LogicsSpecsBuilder.cc
+       ${Logics_PARSER_SRCS}
+       ${Logics_SRC_DIR}/LogicsSpecsBuilder.cc
         )
 
 include(GNUInstallDirs)

@@ -11,7 +11,7 @@
 #pragma once
 
 namespace chase {
-    
+
     class ChaseObject;
     class DesignProblem;
     class System;

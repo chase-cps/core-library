@@ -8,7 +8,6 @@
 #pragma once
 
 #include "representation.hh"
-
 /// @file Definition of factory functions.
 
 namespace chase

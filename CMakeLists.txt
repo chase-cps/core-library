@@ -47,7 +47,6 @@ else()
 endif()
 
 add_subdirectory(core)
-add_subdirectory(backends)
 add_subdirectory(pychase)
 add_subdirectory(doc)
 

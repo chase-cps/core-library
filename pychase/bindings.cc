@@ -7,10 +7,6 @@
 #include "Factory.hh"
 #include "simplify.hh"
 
-#include "GR1CPrinter.hh"
-#include "SlugsPrinter.hh"
-#include "NuSMVPrinter.hh"
-
 #include "GraphUtilities.hh"
 
 namespace py = pybind11;

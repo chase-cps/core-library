@@ -11,9 +11,6 @@
 #include "SlugsPrinter.hh"
 #include "NuSMVPrinter.hh"
 
-#include "DSLSpecsBuilder.hh"
-#include "LogicsSpecsBuilder.hh"
-
 #include "GraphUtilities.hh"
 
 namespace py = pybind11;
@@ -1012,30 +1009,6 @@ PYBIND11_MODULE(pychase, m) {
             .def("visitBinaryTemporalOperation",
                 &NuSMVPrinter::visitBinaryTemporalOperation,
                     py::arg("o").none(false));
-
-        /*
-         * FRONT-ENDS
-         */
-        py::class_<LogicsSpecsBuilder,
-        std::unique_ptr<LogicsSpecsBuilder,
-        py::nodelete> >(m, "LogicsSpecsBuilder")
-        .def(py::init<>())
-        .def("getSystem", &LogicsSpecsBuilder::getSystem)
-        .def("parseSpecificationFile", &LogicsSpecsBuilder::parseSpecificationFile,
-             py::arg("infile").none(false));
-
-        /// Necessary to make the DSL frontend work.
-        py::class_<DSLFrontend::Problem,
-        std::unique_ptr<DSLFrontend::Problem,
-        py::nodelete> >(m, "DesignProblem");
-
-        py::class_<DSLFrontend::DSLSpecsBuilder,
-        std::unique_ptr<DSLFrontend::DSLSpecsBuilder,
-        py::nodelete> >(m, "DSLSpecsBuilder")
-            .def(py::init<>())
-            .def("getContract", &DSLFrontend::DSLSpecsBuilder::getContract)
-            .def("parseSpecificationFile", &DSLFrontend::DSLSpecsBuilder::parseSpecificationFile,
-             py::arg("infile").none(false));
 
 }
 

@@ -74,6 +74,7 @@ set_target_properties(antlr4_static
                                  ARCHIVE_OUTPUT_DIRECTORY ${LIB_OUTPUT_DIR}
                                  COMPILE_FLAGS "${disabled_compile_warnings}")
 
+                             
 install(TARGETS antlr4_shared
         DESTINATION third_party/antlr4/lib)
 install(TARGETS antlr4_static

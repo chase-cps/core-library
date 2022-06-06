@@ -15,7 +15,8 @@ add_subdirectory(third_party)
 
 project (CHASE VERSION 1.0.0)
 
-find_package(pybind11)
+find_package(PythonLibs REQUIRED)
+find_package(pybind11 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,8 +47,8 @@ else()
 endif()
 
 add_subdirectory(core)
-add_subdirectory(frontends)
 add_subdirectory(backends)
+add_subdirectory(pychase)
 add_subdirectory(doc)
 
 

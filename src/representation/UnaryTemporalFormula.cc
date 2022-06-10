@@ -7,6 +7,8 @@
 #include "representation/UnaryTemporalFormula.hh"
 #include "representation/Operators.hh"
 
+#include "utilities/IOUtils.hh"
+
 using namespace chase;
 
 UnaryTemporalFormula::UnaryTemporalFormula(

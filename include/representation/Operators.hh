@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "utilities.hh"
+#include <string>
 
 namespace chase {
     /// @brief Enumeration of Mathematical operators.

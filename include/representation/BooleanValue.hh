@@ -11,7 +11,7 @@
 #pragma once
 
 #include "representation/NumericValue.hh"
-#include "utilities.hh"
+
 
 namespace chase {
 

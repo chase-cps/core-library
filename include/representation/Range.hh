@@ -13,7 +13,6 @@
 #include "representation/IntegerValue.hh"
 #include "representation/RealValue.hh"
 #include "representation/Integer.hh"
-#include "utilities.hh"
 
 #include <stdint.h>
 

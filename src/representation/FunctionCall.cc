@@ -8,6 +8,8 @@
 #include "representation/FunctionCall.hh"
 #include "representation/Function.hh"
 
+#include "utilities/IOUtils.hh"
+
 using namespace chase;
 
 FunctionCall::FunctionCall() :

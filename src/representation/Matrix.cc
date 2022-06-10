@@ -11,6 +11,8 @@
 #include "representation/Real.hh"
 #include "representation/Boolean.hh"
 
+#include "utilities/IOUtils.hh"
+
 using namespace chase;
 
 Matrix::Matrix(

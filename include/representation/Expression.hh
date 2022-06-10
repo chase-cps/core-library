@@ -14,7 +14,7 @@
 #include "representation/Operators.hh"
 #include "representation/Type.hh"
 #include "representation/Boolean.hh"
-#include "utilities.hh"
+
 
 
 namespace chase {

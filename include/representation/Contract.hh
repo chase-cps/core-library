@@ -44,7 +44,7 @@ namespace chase {
 
         /// @brief Setter of the contract's name.
         /// @param name The contract name.
-        void setName(Name *name);
+        void setName(Name *name) override;
 
         /// @brief Function to safely add the assumptions for a given semantic
         /// domain. It takes care of managing the parent link to the contract.

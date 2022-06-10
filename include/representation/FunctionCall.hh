@@ -8,7 +8,7 @@
 #pragma once
 
 #include "representation/Value.hh"
-
+#include <vector>
 
 namespace chase {
 

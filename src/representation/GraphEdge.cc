@@ -6,6 +6,7 @@
  */
 
 #include "representation/Graph.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

@@ -11,7 +11,6 @@
 #pragma once
 
 #include "representation/ChaseObject.hh"
-#include "utilities.hh"
 
 namespace chase {
 

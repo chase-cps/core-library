@@ -6,7 +6,7 @@
  */
 
 #include "representation/Function.hh"
-
+#include "utilities/IOUtils.hh"
 using namespace chase;
 
 Function::Function(Type * type, Name * name, unsigned int arity) :

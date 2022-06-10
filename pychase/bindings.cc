@@ -1,13 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
 #include "chase-core.hh"
-#include "utilities.hh"
-#include "representation.hh"
-
-#include "Factory.hh"
-#include "simplify.hh"
-
-#include "GraphUtilities.hh"
 
 namespace py = pybind11;
 using namespace chase;

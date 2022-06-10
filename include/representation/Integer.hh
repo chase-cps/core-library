@@ -11,7 +11,7 @@
 #pragma once
 
 #include "representation/SimpleType.hh"
-#include "utilities.hh"
+
 
 namespace chase {
 

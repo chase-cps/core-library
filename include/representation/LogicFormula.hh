@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "representation/Specification.hh"
+#include "Specification.hh"
 
 namespace chase
 {

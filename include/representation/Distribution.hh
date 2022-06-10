@@ -10,6 +10,7 @@
 #include "representation/Real.hh"
 
 #include <set>
+#include <map>
 
 namespace chase {
 

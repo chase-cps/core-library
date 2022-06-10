@@ -9,6 +9,7 @@
 #include "representation/Interval.hh"
 #include "representation/Integer.hh"
 #include "representation/Real.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

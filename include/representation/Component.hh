@@ -14,7 +14,7 @@
 #include "representation/Name.hh"
 #include "representation/Value.hh"
 #include "representation/Scope.hh"
-#include "utilities.hh"
+
 
 namespace chase {
 

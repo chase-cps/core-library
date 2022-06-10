@@ -9,6 +9,7 @@
 */
 
 #include "representation/Type.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

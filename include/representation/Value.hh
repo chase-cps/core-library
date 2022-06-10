@@ -12,7 +12,6 @@
 
 #include "representation/ChaseObject.hh"
 #include "representation/Type.hh"
-#include "utilities.hh"
 
 namespace chase {
     

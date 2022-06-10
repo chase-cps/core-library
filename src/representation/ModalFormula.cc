@@ -5,6 +5,7 @@
  *
  */
 #include "representation/ModalFormula.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

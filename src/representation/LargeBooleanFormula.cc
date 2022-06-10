@@ -5,6 +5,7 @@
  *
  */
 #include "representation/LargeBooleanFormula.hh"
+#include "utilities/IOUtils.hh"
 
 using namespace chase;
 

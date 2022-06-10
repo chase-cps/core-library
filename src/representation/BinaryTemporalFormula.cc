@@ -7,6 +7,8 @@
 #include "representation/BinaryTemporalFormula.hh"
 #include "representation/Operators.hh"
 
+#include "utilities/IOUtils.hh"
+
 using namespace chase;
 
 BinaryTemporalFormula::BinaryTemporalFormula(

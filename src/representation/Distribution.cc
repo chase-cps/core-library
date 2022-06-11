@@ -16,8 +16,6 @@ Distribution::Distribution(
         _distribution_type(dtype)
 {
     _node_type = distribution_node;
-    _name->setParent(this);
-    _type->setParent(this);
 }
 
 Distribution::~Distribution() {
@@ -32,6 +30,22 @@ distribution_type Distribution::getDistributionType() const {
 
 void Distribution::setDistributionType(distribution_type distributionType) {
     _distribution_type = distributionType;
+}
+
+Value * Distribution::parameter(std::string name, chase::Value * value)
+{
+    if(value != nullptr) {
+        std::pair< std::string, Value * > p(name, value);
+        parameters.insert(p);
+        return value;
+    } else {
+        auto it = parameters.find(name);
+        if(it != parameters.end()){
+            return it->second;
+        } else {
+            return nullptr;
+        }
+    }
 }
 
 int Distribution::accept_visitor(BaseVisitor &v) {

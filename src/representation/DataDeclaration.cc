@@ -17,7 +17,7 @@ DataDeclaration::DataDeclaration( Type * t, Name * n ) :
     _type(t)
 {
     _node_type = dataDeclaration_node;
-
+    _name->setParent(this);
     _type->setParent(this);
 }
 

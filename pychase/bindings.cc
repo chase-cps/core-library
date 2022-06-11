@@ -257,6 +257,25 @@ PYBIND11_MODULE(pychase, m) {
     .def("accept_visitor", &Interval::accept_visitor,
          py::arg("v").none(false))
     .def("clone", &Interval::clone);
+
+    // Matrix Binding.
+    py::class_<Matrix, std::unique_ptr<Matrix, 
+        py::nodelete>, Value>(m, "Matrix")
+        .def(py::init<unsigned int, unsigned int, std::vector<Value*> >(),
+            py::arg("rows").none(false),
+            py::arg("columns").none(false),
+            py::arg("M").none(true))    
+        .def("getRows", &Matrix::getRows, py::return_value_policy::copy)
+        .def("getColumns", &Matrix::getColumns, py::return_value_policy::copy)
+        .def("at", &Matrix::at, py::return_value_policy::reference,
+            py::arg("i").none(false),
+            py::arg("j").none(false),
+            py::arg("value").none(true))
+        .def("getString", &Matrix::getString)
+        .def("accept_visitor", &Matrix::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &Matrix::clone);
+    
     /**
     *   DECLARATION BINDINGS
     */
@@ -333,7 +352,32 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("v").none(false))
         .def("clone", &Variable::clone);
 
+    // Distribution type enumeration binding.
+    py::enum_<distribution_type>(m, "distribution_type", py::arithmetic())
+        .value("custom", distribution_type::custom)
+        .value("gaussian", distribution_type::gaussian)
+        .value("homogeneous", distribution_type::homogeneous)
+        .export_values();
 
+    // Distribution Binding.
+    py::class_<Distribution, std::unique_ptr<Distribution, 
+        py::nodelete>, DataDeclaration>(m, "Distribution")
+        .def_readwrite("parameters", &Distribution::parameters)
+        .def(py::init<distribution_type &, Name * , Type *>(),
+            py::arg("dtype").none(false),
+            py::arg("name").none(true),
+            py::arg("type").none(true))
+        .def("getDistributionType", &Distribution::getDistributionType)
+        .def("setDistributionType", &Distribution::setDistributionType,
+            py::arg("distributionType").none(false))
+        .def("parameter", &Distribution::parameter,
+            py::arg("name").none(false),
+            py::arg("value").none(true))
+        .def("accept_visitor", &Distribution::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Distribution::getString)
+        .def("clone", &Distribution::clone);
+        
     /**
     *  SPECIFICATIONS BINDINGS
     */

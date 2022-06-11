@@ -43,7 +43,7 @@ namespace chase {
         Distribution(
                 distribution_type dtype,
                 Name * name = new Name("anonymous_distribution"),
-                Type * type = new Real());
+                Type * type = reinterpret_cast<Type*>(new Real()));
 
         /// @brief Destructor.
         ~Distribution();
@@ -54,6 +54,13 @@ namespace chase {
         /// @brief Setter of the Distribution type.
         /// @param distributionType The distribution type.
         void setDistributionType(distribution_type distributionType);
+
+        /// @brief Function to access a given parameter.
+        /// @param name The name of the parameter to access.
+        /// @param value The value of the parameter to set. If the parameter is
+        /// to be read, then the value is a nullptr.
+        /// @return The value of the parameter.
+        chase::Value * parameter(std::string name, chase::Value * value = nullptr);
 
         /// @brief Main function of the visit.
         /// @param v The visitor visiting the object.

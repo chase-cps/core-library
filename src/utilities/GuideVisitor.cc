@@ -272,7 +272,7 @@ int chase::GuideVisitor::continueVisit(chase::ChaseObject *o)
             return v->accept_visitor(*this);
         }
 
-        case large_boolean_formula_node: {
+        case largeBooleanFormula_node: {
             auto v = reinterpret_cast< LargeBooleanFormula *>(o);
             return v->accept_visitor(*this);
         }
@@ -297,11 +297,11 @@ int chase::GuideVisitor::continueVisit(chase::ChaseObject *o)
             auto v = reinterpret_cast< Graph *>(o);
             return v->accept_visitor(*this);
         }
-        case graph_edge_node : {
+        case graphEdge_node : {
             auto v = reinterpret_cast< Edge *>(o);
             return v->accept_visitor(*this);
         }
-        case graph_vertex_node : {
+        case graphVertex_node : {
             auto v = reinterpret_cast< Vertex *>(o);
             return v->accept_visitor(*this);
         }

@@ -14,7 +14,7 @@ Edge::Edge(unsigned int source, unsigned int target ) :
         _source(source),
         _target(target)
 {
-    _node_type = graph_edge_node;
+    _node_type = graphEdge_node;
 }
 
 unsigned int Edge::getSource() const {

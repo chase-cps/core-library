@@ -58,7 +58,7 @@ GroupTemporalOperatorsVisitor::_analyzeFormula(LogicFormula *formula)
             }
         }
     }
-    if(formula->IsA() == large_boolean_formula_node)
+    if(formula->IsA() == largeBooleanFormula_node)
     {
         auto lbf = reinterpret_cast< LargeBooleanFormula*>(formula);
 

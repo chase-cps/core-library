@@ -15,7 +15,7 @@ using namespace chase;
 FunctionCall::FunctionCall() :
     Value()
 {
-    _node_type = functionaCall_node;
+    _node_type = functionCall_node;
 }
 
 FunctionCall::~FunctionCall() = default;

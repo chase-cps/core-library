@@ -12,9 +12,70 @@ using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 PYBIND11_MODULE(pychase, m) {
     m.doc() = "CHASE Core  Python wrapper module";
 
+    py::enum_<chase::nodeType>(m, "nodeType")
+        .value("object_node", chase::object_node)
+        .value("system_node", chase::system_node)
+        .value("design_problem_node", chase::design_problem_node)
+        .value("specification_node", chase::specification_node)
+        .value("contract_node", chase::contract_node)
+        .value("boolean_node", chase::boolean_node)
+        .value("booleanValue_node", chase::booleanValue_node)
+        .value("constant_node", chase::constant_node)
+        .value("dataDeclaration_node", chase::dataDeclaration_node)
+        .value("declaration_node", chase::declaration_node)
+        .value("componentDefinition_node", chase::componentDefinition_node)
+        .value("component_node", chase::component_node)
+        .value("expression_node", chase::expression_node)
+        .value("identifier_node", chase::identifier_node)
+        .value("integer_node", chase::integer_node)
+        .value("integerValue_node", chase::integerValue_node)
+        .value("interval_node", chase::interval_node)
+        .value("name_node", chase::name_node)
+        .value("numericValue_node", chase::numericValue_node)
+        .value("range_node", chase::range_node)
+        .value("real_node", chase::real_node)
+        .value("realValue_node", chase::realValue_node)
+        .value("string_node", chase::string_node)
+        .value("stringValue_node", chase::stringValue_node)
+        .value("simpleType_node", chase::simpleType_node)
+        .value("customType_node", chase::customType_node)
+        .value("enumeration_node", chase::enumeration_node)
+        .value("type_node", chase::type_node)
+        .value("value_node", chase::value_node)
+        .value("matrix_node", chase::matrix_node)
+        .value("variable_node", chase::variable_node)
+        .value("parameter_node", chase::parameter_node)
+        .value("distribution_node", chase::distribution_node)
+        .value("proposition_node", chase::proposition_node)
+        .value("unaryBooleanOperation_node", chase::unaryBooleanOperation_node)
+        .value("binaryBooleanOperation_node", chase::binaryBooleanOperation_node)
+        .value("booleanConstant_node", chase::booleanConstant_node)
+        .value("modalFormula_node", chase::modalFormula_node)
+        .value("largeBooleanFormula_node", chase::largeBooleanFormula_node)
+        .value("unaryTemporalOperation_node", chase::unaryTemporalOperation_node)
+        .value("binaryTemporalOperation_node", chase::binaryTemporalOperation_node)
+        .value("quantified_formula_node", chase::quantifiedFormula_node)
+        .value("graphEdge_node", chase::graphEdge_node)
+        .value("graphVertex_node", chase::graphVertex_node)
+        .value("graph_node", chase::graph_node)
+        .value("library_node", chase::library_node)
+        .value("functionCall_node", chase::functionCall_node)
+        .value("probabilityFunction_node", chase::probabilityFunction_node)
+        .value("relation_node", chase::relation_node)
+        .value("constraint_node", chase::constraint_node)
+        .export_values();
+
     py::class_<ChaseObject, std::unique_ptr<ChaseObject, 
         py::nodelete>>
-        (m, "ChaseObject");
+        (m, "ChaseObject")
+        .def("getParent", &ChaseObject::getParent)
+        .def("setParent", &ChaseObject::setParent,
+            py::arg("parent").none(false))
+        .def("accept_visitor", &ChaseObject::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &ChaseObject::getString)
+        .def("clone", &ChaseObject::clone)
+        .def("IsA", &ChaseObject::IsA);
 
 
 
@@ -281,7 +342,17 @@ PYBIND11_MODULE(pychase, m) {
     */
 
     py::class_<Declaration, std::unique_ptr<Declaration, 
-        py::nodelete>, ChaseObject>(m, "Declaration");
+        py::nodelete>, ChaseObject>(m, "Declaration")
+        .def("getName", &Declaration::getName)
+        .def("setName", &Declaration::setName,
+            py::arg("name").none(false))
+        ;
+
+    py::class_<Scope, std::unique_ptr<Scope, py::nodelete>, 
+        Declaration>(m, "Scope")
+        .def("addDeclaration", &Scope::addDeclaration,
+            py::arg("declaration").none(false))
+        ;
 
     // ComponentDefinition Binding
     py::class_<ComponentDefinition, std::unique_ptr<
@@ -665,7 +736,7 @@ PYBIND11_MODULE(pychase, m) {
     */ 
 
     py::class_<Contract, std::unique_ptr<Contract, 
-        py::nodelete>, ChaseObject>(m, "Contract")
+        py::nodelete>, Scope>(m, "Contract")
         .def(py::init<std::string >(),
             py::arg("name")="contract")
         .def("getName", &Contract::getName,

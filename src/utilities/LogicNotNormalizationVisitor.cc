@@ -100,7 +100,7 @@ LogicNotNormalizationVisitor::_analyzeFormula(LogicFormula *formula)
                         break;
                 }
             }
-            if( f->IsA() == large_boolean_formula_node )
+            if( f->IsA() == largeBooleanFormula_node )
             {
                 auto inner = static_cast< LargeBooleanFormula * >(f);
 

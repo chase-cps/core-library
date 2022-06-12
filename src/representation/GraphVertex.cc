@@ -13,7 +13,7 @@ using namespace chase;
 Vertex::Vertex(Name *name) :
     _name(name)
 {
-    _node_type = graph_vertex_node;
+    _node_type = graphVertex_node;
     if( _name == nullptr )
     {
         _name = new Name("GenericVertex");

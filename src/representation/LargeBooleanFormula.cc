@@ -12,7 +12,7 @@ using namespace chase;
 LargeBooleanFormula::LargeBooleanFormula(BooleanOperator op ) :
     _op(op)
 {
-    _node_type = large_boolean_formula_node;
+    _node_type = largeBooleanFormula_node;
     bool valid = false;
     switch( _op )
     {

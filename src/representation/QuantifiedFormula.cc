@@ -17,7 +17,7 @@ QuantifiedFormula::QuantifiedFormula(
     _variable(variable),
     _formula(formula)
 {
-    _node_type = quantified_formula_node;
+    _node_type = quantifiedFormula_node;
     _variable->setParent(this);
     _formula->setParent(this);
 }

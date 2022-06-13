@@ -77,6 +77,16 @@ PYBIND11_MODULE(pychase, m) {
         .def("clone", &ChaseObject::clone)
         .def("IsA", &ChaseObject::IsA);
 
+    py::class_<DesignProblem, std::unique_ptr<DesignProblem, py::nodelete>,
+        ChaseObject>(m, "DesignProblem")
+        .def(py::init<>())
+        .def("getSystem", &DesignProblem::getSystem)
+        .def("setSystem", &DesignProblem::setSystem,
+            py::arg("system").none(false))
+        .def("accept_visitor", &DesignProblem::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &DesignProblem::getString)
+        .def("clone", &DesignProblem::clone);
 
 
     py::class_<Name, std::unique_ptr<Name, 
@@ -140,14 +150,61 @@ PYBIND11_MODULE(pychase, m) {
     *   TYPES BINDINGS
     */
 
+   // Type binding.
     py::class_<Type, std::unique_ptr<Type, 
-        py::nodelete>>(m, "Type");
+        py::nodelete>, ChaseObject>(m, "Type")
+        .def("getTypeVariant", &Type::getTypeVariant)
+        .def("setTypeVariant", &Type::setTypeVariant,
+            py::arg("tv").none(false))
+        .def("getTypeVariantString", &Type::getTypeVariantString)
+        .def("accept_visitor", &Type::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Type::getString)
+        .def("clone", &Type::clone);
+        
+
+    // SimpleType binding.
     py::class_<SimpleType, Type, std::unique_ptr<SimpleType, 
         py::nodelete>>
     (m, "SimpleType");
+
+    // CustomType binding.
     py::class_<CustomType, Type, std::unique_ptr<CustomType,
-        py::nodelete>>
-    (m, "CustomType");
+        py::nodelete>>(m, "CustomType")
+        .def(py::init<std::string, Type *>(),
+            py::arg("name")=std::string(""),
+            py::arg("type")=nullptr)
+        .def(py::init<Name*, Type *>(),
+            py::arg("name")=new Name(""),
+            py::arg("type")=nullptr)
+        .def("getType", &CustomType::getType)
+        .def("setType", &CustomType::setType,
+            py::arg("type").none(false))
+        .def("getName", &CustomType::getName)
+        .def("setName", &CustomType::setName,
+            py::arg("name").none(false))
+        .def("accept_visitor", &CustomType::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &CustomType::getString)
+        .def("clone", &CustomType::clone);
+
+    // Enumeration binding.
+    py::class_<Enumeration, CustomType, 
+        std::unique_ptr<Enumeration, py::nodelete>>(m, "Enumeration")
+        .def(py::init<std::string>(),
+            py::arg("name")="")
+        .def(py::init<Name *>(),
+            py::arg("name").none(false))
+        .def("addItem", &Enumeration::addItem,
+            py::arg("item").none(false))
+        .def("getItemInPosition", &Enumeration::getItemInPosition,
+            py::arg("position").none(false))
+        .def("getPositionByName", &Enumeration::getPositionByName,
+            py::arg("name").none(false))
+        .def("accept_visitor", &Enumeration::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Enumeration::getString)
+        .def("clone", &Enumeration::clone);
 
     // Boolean Type
     py::class_<Boolean, std::unique_ptr<Boolean>, SimpleType>
@@ -187,16 +244,21 @@ PYBIND11_MODULE(pychase, m) {
         .def("clone", &Real::clone);
 
 
-
     /**
     *   VALUES BINDINGS
     */
 
+   // Value binding.
     py::class_<Value, std::unique_ptr<Value, py::nodelete>, 
-        ChaseObject>(m, "Value");
+        ChaseObject>(m, "Value")
+        .def("getType", &Value::getType)
+        .def("setType", &Value::setType,
+            py::arg("type").none(false))
+        .def("clone", &Value::clone);
+
+    // NumericValue binding.
     py::class_<NumericValue, std::unique_ptr<NumericValue, 
         py::nodelete>, Value>(m, "NumericValue");
-
 
     //  Identifier Binding
     py::class_<Identifier, std::unique_ptr<Identifier, 
@@ -232,7 +294,6 @@ PYBIND11_MODULE(pychase, m) {
         .def("accept_visitor", &Expression::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Expression::clone);
-
 
     //  BooleanValue Binding
     py::class_<BooleanValue, std::unique_ptr<BooleanValue, 
@@ -331,16 +392,58 @@ PYBIND11_MODULE(pychase, m) {
         .def("at", &Matrix::at, py::return_value_policy::reference,
             py::arg("i").none(false),
             py::arg("j").none(false),
-            py::arg("value").none(true))
+            py::arg("value") = nullptr)
         .def("getString", &Matrix::getString)
         .def("accept_visitor", &Matrix::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Matrix::clone);
+
+    // FunctionCall Binding.
+    py::class_<FunctionCall, Value, std::unique_ptr<FunctionCall,
+        py::nodelete>>(m, "FunctionCall")
+        .def(py::init<>())
+        .def("getFunction", &FunctionCall::getFunction)
+        .def("setFunction", &FunctionCall::setFunction,
+            py::arg("function").none(false),
+            py::arg("initialize")=true)
+        .def("parameter", &FunctionCall::parameter,
+            py::arg("i").none(false),
+            py::arg("value")=nullptr)
+        .def("getString", &FunctionCall::getString)
+        .def("accept_visitor", &FunctionCall::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &FunctionCall::clone);
+
+    // Probability Function.
+    py::class_<ProbabilityFunction, Value, std::unique_ptr<
+        ProbabilityFunction, py::nodelete>>(m, "ProbabilityFunction")
+        .def(py::init<Specification *>(),
+            py::arg("specification")=nullptr)
+        .def("getSpecification", &ProbabilityFunction::getSpecification)
+        .def("setSpecification", &ProbabilityFunction::setSpecification,
+            py::arg("specification").none(false))
+        .def("getString", &ProbabilityFunction::getString)
+        .def("accept_visitor", &ProbabilityFunction::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &ProbabilityFunction::clone);
+
+    py::class_<Relation, Value,
+        std::unique_ptr< Relation, py::nodelete>>(m, "Relation")
+        .def(py::init<>())
+        .def("getOperator", &Relation::getOperator)
+        .def("setOperator", &Relation::setOperator,
+            py::arg("op").none(false))
+        .def_readwrite("elements", &Relation::elements)
+        .def("getString", &Relation::getString)
+        .def("accept_visitor", &Relation::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &Relation::clone);
     
     /**
     *   DECLARATION BINDINGS
     */
 
+   // Declaration binding.
     py::class_<Declaration, std::unique_ptr<Declaration, 
         py::nodelete>, ChaseObject>(m, "Declaration")
         .def("getName", &Declaration::getName)
@@ -348,11 +451,26 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("name").none(false))
         ;
 
+    // Scope binding.
     py::class_<Scope, std::unique_ptr<Scope, py::nodelete>, 
         Declaration>(m, "Scope")
         .def("addDeclaration", &Scope::addDeclaration,
             py::arg("declaration").none(false))
+        .def_readwrite("declarations", &Scope::declarations)
         ;
+
+    // Library binding.
+    py::class_<Library, Scope, std::unique_ptr<Library, py::nodelete>>
+        (m, "Library")
+        .def(py::init<>())
+        .def(py::init<std::string>(),
+            py::arg("name").none(false))
+        .def(py::init<Name*>(),
+            py::arg("name").none(false))
+        .def("accept_visitor", &Library::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Library::getString)
+        .def("clone", &Library::clone);
 
     // ComponentDefinition Binding
     py::class_<ComponentDefinition, std::unique_ptr<
@@ -370,19 +488,13 @@ PYBIND11_MODULE(pychase, m) {
         .def_readwrite("views", &ComponentDefinition::views)
         .def_readwrite("subcomponents", &ComponentDefinition::subcomponents);
     
+    // DataDeclaration Binding
     py::class_<DataDeclaration, std::unique_ptr<DataDeclaration, 
-        py::nodelete>, Declaration>(m, "DataDeclaration");
-    
-    //Parameter Binding
-    py::class_<Parameter, std::unique_ptr<Parameter, 
-        py::nodelete>, DataDeclaration>(m, "Parameter")
-        .def(py::init<Type *, Name *>(),
-            py::arg("type")=nullptr, 
-            py::arg("name")=nullptr)
-        .def("accept_visitor", &Parameter::accept_visitor,
-            py::arg("v").none(false))
-        .def("getString", &Parameter::getString)
-        .def("clone", &Parameter::clone);
+        py::nodelete>, Declaration>(m, "DataDeclaration")
+        .def("getType", &DataDeclaration::getType)
+        .def("setType", &DataDeclaration::setType,
+            py::arg("t").none(false));
+
 
     // Constant Binding
     py::class_<Constant, std::unique_ptr<Constant, 
@@ -398,30 +510,6 @@ PYBIND11_MODULE(pychase, m) {
         .def("accept_visitor", &Constant::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Constant::clone);
-
-    // Causality Enum
-    py::enum_<chase::causality_t>(m, "causality_t")
-        .value("generic", chase::causality_t::generic)
-        .value("input", chase::causality_t::input)
-        .value("output", chase::causality_t::output)
-        .value("inout", chase::causality_t::inout)
-        .value("internal", chase::causality_t::internal)
-        .export_values();
-        
-    // Variable Binding
-    py::class_<Variable, std::unique_ptr<Variable, 
-        py::nodelete>, DataDeclaration>(m, "Variable")
-        .def(py::init<Type *, Name *, causality_t &>(),
-            py::arg("type"), 
-            py::arg("name"), 
-            py::arg("causality_t")=generic)
-        .def("getString", &Variable::getString)
-        .def("getCausality", &Variable::getCausality)
-        .def("setCausality", &Variable::setCausality, 
-            py::arg("causality").none(false))
-        .def("accept_visitor", &Variable::accept_visitor,
-            py::arg("v").none(false))
-        .def("clone", &Variable::clone);
 
     // Distribution type enumeration binding.
     py::enum_<distribution_type>(m, "distribution_type", py::arithmetic())
@@ -448,20 +536,94 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("v").none(false))
         .def("getString", &Distribution::getString)
         .def("clone", &Distribution::clone);
+
+    // Function Binding.
+    py::class_<Function, std::unique_ptr<Function, py::nodelete>,
+        DataDeclaration>(m, "Function")
+        .def_readwrite("parameters", &Function::parameters)
+        .def(py::init<Type *, Name *, unsigned int>(),
+            py::arg("type").none(false),
+            py::arg("name").none(false),
+            py::arg("arity").none(false))
+        .def("getArity", &Function::getArity)
+        .def("setArity", &Function::setArity,
+            py::arg("arity").none(false))
+        .def("getDomainOfParameter", &Function::getDomainOfParameter)
+        .def("setDomainOfParameter", &Function::setDomainOfParameter,
+            py::arg("position").none(false),
+            py::arg("type").none(false))
+        .def("accept_visitor", &Function::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Function::getString)
+        .def("clone", &Function::clone);
+
+    //Parameter Binding
+    py::class_<Parameter, std::unique_ptr<Parameter, 
+        py::nodelete>, DataDeclaration>(m, "Parameter")
+        .def(py::init<Type *, Name *>(),
+            py::arg("type")=nullptr, 
+            py::arg("name")=nullptr)
+        .def("accept_visitor", &Parameter::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Parameter::getString)
+        .def("clone", &Parameter::clone);
+
+    // Causality Enum
+    py::enum_<chase::causality_t>(m, "causality_t")
+        .value("generic", chase::causality_t::generic)
+        .value("input", chase::causality_t::input)
+        .value("output", chase::causality_t::output)
+        .value("inout", chase::causality_t::inout)
+        .value("internal", chase::causality_t::internal)
+        .export_values();
         
+    // Variable Binding
+    py::class_<Variable, std::unique_ptr<Variable, 
+        py::nodelete>, DataDeclaration>(m, "Variable")
+        .def(py::init<Type *, Name *, causality_t &>(),
+            py::arg("type"), 
+            py::arg("name"), 
+            py::arg("causality_t")=generic)
+        .def("getString", &Variable::getString)
+        .def("getCausality", &Variable::getCausality)
+        .def("setCausality", &Variable::setCausality, 
+            py::arg("causality").none(false))
+        .def("accept_visitor", &Variable::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &Variable::clone);
+
     /**
     *  SPECIFICATIONS BINDINGS
     */
 
+   // Specification abstract class.
     py::class_<Specification, std::unique_ptr<Specification, 
         py::nodelete>, ChaseObject>(m, "Specification");
     py::class_<LogicFormula, std::unique_ptr<LogicFormula, 
         py::nodelete>, Specification>(m, "LogicFormula");
 
+    // Semantic domain binding.
     py::enum_<chase::semantic_domain>(m, "semantic_domain")
         .value("logic", chase::semantic_domain::logic)
         .value("graph", chase::semantic_domain::graph)
         .export_values();
+
+    py::enum_<chase::logic_quantifier>(m, "logic_quantifier")
+        .value("forall", logic_quantifier::forall)
+        .value("exists", logic_quantifier::exists)
+        .export_values();
+
+    // Constraint binding.
+    py::class_<Constraint, std::unique_ptr<Constraint, py::nodelete>,
+        Specification>(m, "Constraint")
+        .def(py::init<>())
+        .def("getExpression", &Constraint::getExpression)
+        .def("setExpression", &Constraint::setExpression,
+            py::arg("expression").none(false))
+        .def("accept_visitor", &Constraint::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Constraint::getString)
+        .def("clone", &Constraint::clone);
 
     // BinaryBooleanFormula
     py::class_<BinaryBooleanFormula, 
@@ -612,6 +774,27 @@ PYBIND11_MODULE(pychase, m) {
         .def("getString", &UnaryTemporalFormula::getString)
         .def("clone", &UnaryTemporalFormula::clone);
 
+
+    // QuantifiedFormula binding.
+    py::class_<QuantifiedFormula, std::unique_ptr<QuantifiedFormula,
+        py::nodelete>, LogicFormula>(m, "QuantifiedFormula")
+        .def(py::init<logic_quantifier, Variable *, LogicFormula *>(),
+            py::arg("quantifier")=logic_quantifier::forall,
+            py::arg("variable")=new Variable(),
+            py::arg("formula")=nullptr)
+        .def("getQuantifier", &QuantifiedFormula::getQuantifier)
+        .def("getVariable", &QuantifiedFormula::getVariable)
+        .def("getFormula", &QuantifiedFormula::getFormula)
+        .def("setQuantifier", &QuantifiedFormula::setQuantifier,
+            py::arg("quantifier").none(false))
+        .def("setVariable", &QuantifiedFormula::setVariable,
+            py::arg("variable").none(false))
+        .def("setFormula", &QuantifiedFormula::setFormula,
+            py::arg("formula").none(false))
+        .def("accept_visitor", &QuantifiedFormula::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &QuantifiedFormula::getString)
+        .def("clone", &QuantifiedFormula::clone);
     
     /**
     * GRAPH BINDINGS

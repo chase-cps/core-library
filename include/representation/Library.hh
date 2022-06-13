@@ -12,6 +12,9 @@
 
 namespace chase {
 
+    /// @brief Class to represent the Library of components. It should be
+    /// like a collection of objects.
+    /// @todo 
     class Library : public Scope {
     public:
 
@@ -22,7 +25,7 @@ namespace chase {
         Library(const std::string &name);
         /// @brief Constructor.
         /// @param name The name as an object.
-        Library(Name *n);
+        Library(Name *name);
 
         /// @brief Destructor.
         ~Library() override;

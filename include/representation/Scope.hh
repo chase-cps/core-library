@@ -26,7 +26,7 @@ namespace chase {
         /// @param declaration A pointer to the declaration to add.
         void addDeclaration(Declaration * declaration);
 
-        Scope(Name *n);
+        Scope(Name *name);
         Scope(std::string name);
 
         Scope();

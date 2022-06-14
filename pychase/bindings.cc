@@ -88,7 +88,6 @@ PYBIND11_MODULE(pychase, m) {
         .def("getString", &DesignProblem::getString)
         .def("clone", &DesignProblem::clone);
 
-
     py::class_<Name, std::unique_ptr<Name, 
         py::nodelete>, ChaseObject>
         (m, "Name")
@@ -150,7 +149,7 @@ PYBIND11_MODULE(pychase, m) {
     *   TYPES BINDINGS
     */
 
-   // Type binding.
+    // Type binding.
     py::class_<Type, std::unique_ptr<Type, 
         py::nodelete>, ChaseObject>(m, "Type")
         .def("getTypeVariant", &Type::getTypeVariant)
@@ -161,9 +160,7 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("v").none(false))
         .def("getString", &Type::getString)
         .def("clone", &Type::clone);
-        
 
-    // SimpleType binding.
     py::class_<SimpleType, Type, std::unique_ptr<SimpleType, 
         py::nodelete>>
     (m, "SimpleType");
@@ -244,11 +241,12 @@ PYBIND11_MODULE(pychase, m) {
         .def("clone", &Real::clone);
 
 
+
     /**
     *   VALUES BINDINGS
     */
 
-   // Value binding.
+ // Value binding.
     py::class_<Value, std::unique_ptr<Value, py::nodelete>, 
         ChaseObject>(m, "Value")
         .def("getType", &Value::getType)
@@ -259,6 +257,7 @@ PYBIND11_MODULE(pychase, m) {
     // NumericValue binding.
     py::class_<NumericValue, std::unique_ptr<NumericValue, 
         py::nodelete>, Value>(m, "NumericValue");
+
 
     //  Identifier Binding
     py::class_<Identifier, std::unique_ptr<Identifier, 
@@ -294,6 +293,7 @@ PYBIND11_MODULE(pychase, m) {
         .def("accept_visitor", &Expression::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Expression::clone);
+
 
     //  BooleanValue Binding
     py::class_<BooleanValue, std::unique_ptr<BooleanValue, 
@@ -392,12 +392,12 @@ PYBIND11_MODULE(pychase, m) {
         .def("at", &Matrix::at, py::return_value_policy::reference,
             py::arg("i").none(false),
             py::arg("j").none(false),
-            py::arg("value") = nullptr)
+            py::arg("value").none(true))
         .def("getString", &Matrix::getString)
         .def("accept_visitor", &Matrix::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Matrix::clone);
-
+    
     // FunctionCall Binding.
     py::class_<FunctionCall, Value, std::unique_ptr<FunctionCall,
         py::nodelete>>(m, "FunctionCall")
@@ -427,23 +427,11 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("v").none(false))
         .def("clone", &ProbabilityFunction::clone);
 
-    py::class_<Relation, Value,
-        std::unique_ptr< Relation, py::nodelete>>(m, "Relation")
-        .def(py::init<>())
-        .def("getOperator", &Relation::getOperator)
-        .def("setOperator", &Relation::setOperator,
-            py::arg("op").none(false))
-        .def_readwrite("elements", &Relation::elements)
-        .def("getString", &Relation::getString)
-        .def("accept_visitor", &Relation::accept_visitor,
-            py::arg("v").none(false))
-        .def("clone", &Relation::clone);
-    
     /**
     *   DECLARATION BINDINGS
     */
 
-   // Declaration binding.
+    // Declaration binding.
     py::class_<Declaration, std::unique_ptr<Declaration, 
         py::nodelete>, ChaseObject>(m, "Declaration")
         .def("getName", &Declaration::getName)
@@ -494,7 +482,17 @@ PYBIND11_MODULE(pychase, m) {
         .def("getType", &DataDeclaration::getType)
         .def("setType", &DataDeclaration::setType,
             py::arg("t").none(false));
-
+    
+    //Parameter Binding
+    py::class_<Parameter, std::unique_ptr<Parameter, 
+        py::nodelete>, DataDeclaration>(m, "Parameter")
+        .def(py::init<Type *, Name *>(),
+            py::arg("type")=nullptr, 
+            py::arg("name")=nullptr)
+        .def("accept_visitor", &Parameter::accept_visitor,
+            py::arg("v").none(false))
+        .def("getString", &Parameter::getString)
+        .def("clone", &Parameter::clone);
 
     // Constant Binding
     py::class_<Constant, std::unique_ptr<Constant, 
@@ -510,6 +508,30 @@ PYBIND11_MODULE(pychase, m) {
         .def("accept_visitor", &Constant::accept_visitor,
             py::arg("v").none(false))
         .def("clone", &Constant::clone);
+
+    // Causality Enum
+    py::enum_<chase::causality_t>(m, "causality_t")
+        .value("generic", chase::causality_t::generic)
+        .value("input", chase::causality_t::input)
+        .value("output", chase::causality_t::output)
+        .value("inout", chase::causality_t::inout)
+        .value("internal", chase::causality_t::internal)
+        .export_values();
+        
+    // Variable Binding
+    py::class_<Variable, std::unique_ptr<Variable, 
+        py::nodelete>, DataDeclaration>(m, "Variable")
+        .def(py::init<Type *, Name *, causality_t &>(),
+            py::arg("type"), 
+            py::arg("name"), 
+            py::arg("causality_t")=generic)
+        .def("getString", &Variable::getString)
+        .def("getCausality", &Variable::getCausality)
+        .def("setCausality", &Variable::setCausality, 
+            py::arg("causality").none(false))
+        .def("accept_visitor", &Variable::accept_visitor,
+            py::arg("v").none(false))
+        .def("clone", &Variable::clone);
 
     // Distribution type enumeration binding.
     py::enum_<distribution_type>(m, "distribution_type", py::arithmetic())
@@ -556,59 +578,22 @@ PYBIND11_MODULE(pychase, m) {
             py::arg("v").none(false))
         .def("getString", &Function::getString)
         .def("clone", &Function::clone);
-
-    //Parameter Binding
-    py::class_<Parameter, std::unique_ptr<Parameter, 
-        py::nodelete>, DataDeclaration>(m, "Parameter")
-        .def(py::init<Type *, Name *>(),
-            py::arg("type")=nullptr, 
-            py::arg("name")=nullptr)
-        .def("accept_visitor", &Parameter::accept_visitor,
-            py::arg("v").none(false))
-        .def("getString", &Parameter::getString)
-        .def("clone", &Parameter::clone);
-
-    // Causality Enum
-    py::enum_<chase::causality_t>(m, "causality_t")
-        .value("generic", chase::causality_t::generic)
-        .value("input", chase::causality_t::input)
-        .value("output", chase::causality_t::output)
-        .value("inout", chase::causality_t::inout)
-        .value("internal", chase::causality_t::internal)
-        .export_values();
         
-    // Variable Binding
-    py::class_<Variable, std::unique_ptr<Variable, 
-        py::nodelete>, DataDeclaration>(m, "Variable")
-        .def(py::init<Type *, Name *, causality_t &>(),
-            py::arg("type"), 
-            py::arg("name"), 
-            py::arg("causality_t")=generic)
-        .def("getString", &Variable::getString)
-        .def("getCausality", &Variable::getCausality)
-        .def("setCausality", &Variable::setCausality, 
-            py::arg("causality").none(false))
-        .def("accept_visitor", &Variable::accept_visitor,
-            py::arg("v").none(false))
-        .def("clone", &Variable::clone);
-
     /**
     *  SPECIFICATIONS BINDINGS
     */
 
-   // Specification abstract class.
     py::class_<Specification, std::unique_ptr<Specification, 
         py::nodelete>, ChaseObject>(m, "Specification");
     py::class_<LogicFormula, std::unique_ptr<LogicFormula, 
         py::nodelete>, Specification>(m, "LogicFormula");
 
-    // Semantic domain binding.
     py::enum_<chase::semantic_domain>(m, "semantic_domain")
         .value("logic", chase::semantic_domain::logic)
         .value("graph", chase::semantic_domain::graph)
         .export_values();
 
-    py::enum_<chase::logic_quantifier>(m, "logic_quantifier")
+        py::enum_<chase::logic_quantifier>(m, "logic_quantifier")
         .value("forall", logic_quantifier::forall)
         .value("exists", logic_quantifier::exists)
         .export_values();
@@ -775,13 +760,14 @@ PYBIND11_MODULE(pychase, m) {
         .def("clone", &UnaryTemporalFormula::clone);
 
 
+
     // QuantifiedFormula binding.
     py::class_<QuantifiedFormula, std::unique_ptr<QuantifiedFormula,
         py::nodelete>, LogicFormula>(m, "QuantifiedFormula")
         .def(py::init<logic_quantifier, Variable *, LogicFormula *>(),
-            py::arg("quantifier")=logic_quantifier::forall,
-            py::arg("variable")=new Variable(),
-            py::arg("formula")=nullptr)
+            py::arg("quantifier").none(false),
+            py::arg("variable").none(false),
+            py::arg("formula").none(false))
         .def("getQuantifier", &QuantifiedFormula::getQuantifier)
         .def("getVariable", &QuantifiedFormula::getVariable)
         .def("getFormula", &QuantifiedFormula::getFormula)
@@ -1187,4 +1173,3 @@ PYBIND11_MODULE(pychase, m) {
     m.def("BoolVal", &chase::BoolVal,
         py::arg("b").none(false));    
 }
-

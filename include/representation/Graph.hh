@@ -138,6 +138,13 @@ namespace chase {
         /// @return Clone of the object.
         WeightedEdge * clone() override;
 
+        /// @brief Base function for the visit.
+        /// @param v The visitor to be used.
+        /// @return The return value of the used visitor.
+        int accept_visitor(chase::BaseVisitor &v);
+
+
+
     protected:
         /// @brief The weight of the edge, expressed as a Value object.
         Value * _weight;

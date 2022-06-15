@@ -98,6 +98,19 @@ namespace chase {
 
         int visitString(String &s) override;
 
+        int visitDesignProblem(DesignProblem &problem) override;
+
+        int visitFunctionCall(FunctionCall &call) override;
+
+        int visitFunction(Function &function) override;
+
+        int visitConstraint(Constraint &constraint) override;
+
+        int visitLibrary(Library &library) override;
+
+        int visitWeightedEdge(WeightedEdge &edge) override;
+
+
         /// @endcond
 
         // Generic methods for continue the visit in special cases.

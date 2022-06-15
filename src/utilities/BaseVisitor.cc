@@ -51,6 +51,7 @@ int BaseVisitor::visitUnaryTemporalOperation(UnaryTemporalFormula &) {
 }
 int BaseVisitor::visitContract(Contract &) {return 0;}
 int BaseVisitor::visitEdge(Edge &) {return 0;}
+int BaseVisitor::visitWeightedEdge(WeightedEdge &) {return 0;}
 int BaseVisitor::visitVertex(Vertex &) {return 0;}
 int BaseVisitor::visitGraph(Graph &){return 0;}
 int BaseVisitor::visitLargeBooleanFormula(LargeBooleanFormula &) {return 0;}
@@ -69,6 +70,7 @@ int BaseVisitor::visitFunctionCall(FunctionCall &) {return 0;}
 int BaseVisitor::visitDesignProblem(DesignProblem &) {return 0;}
 int BaseVisitor::visitConstraint(Constraint &) {return 0;}
 int BaseVisitor::visitProbabilityFunction(ProbabilityFunction &) {return 0;}
+
 
 
 

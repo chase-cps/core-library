@@ -9,8 +9,11 @@ using namespace chase;
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
 
-PYBIND11_MODULE(pychase, m) {
-    m.doc() = "CHASE Core  Python wrapper module";
+PYBIND11_MODULE(pychase, k) {
+    k.doc() = "CHASE Core  Python wrapper module";
+
+    auto m = k.def_submodule("representation", 
+        "Wrapper for the Chase core representation library.");
 
     py::enum_<chase::nodeType>(m, "nodeType")
         .value("object_node", chase::object_node)
@@ -162,8 +165,7 @@ PYBIND11_MODULE(pychase, m) {
         .def("clone", &Type::clone);
 
     py::class_<SimpleType, Type, std::unique_ptr<SimpleType, 
-        py::nodelete>>
-    (m, "SimpleType");
+        py::nodelete>>(m, "SimpleType");
 
     // CustomType binding.
     py::class_<CustomType, Type, std::unique_ptr<CustomType,
@@ -1012,68 +1014,21 @@ PYBIND11_MODULE(pychase, m) {
     * VISITOR BINDINGS
     */ 
 
-    //BaseVisitor Binding
-    py::class_<BaseVisitor, std::unique_ptr<BaseVisitor,
-        py::nodelete>>(m, "BaseVisitor");
-    
-    py::class_<GuideVisitor, std::unique_ptr<GuideVisitor, 
-        py::nodelete>>(m, "GuideVisitor")
-        .def(py::init<int &>(),
-            py::arg("rv")=0)
-        .def("visitSystem", &GuideVisitor::visitSystem)
-        .def("vistiRange", &GuideVisitor::visitRange)
-        .def("visitIntegerValue", 
-            &GuideVisitor::visitIntegerValue)
-        .def("visitRealValue", 
-            &GuideVisitor::visitRealValue)
-        .def("visitBooleanValue", 
-            &GuideVisitor::visitBooleanValue)
-        .def("visitExpression", 
-            &GuideVisitor::visitExpression)
-        .def("visitIdentifier", 
-            &GuideVisitor::visitIdentifier)
-        .def("visitInteger", &GuideVisitor::visitInteger)
-        .def("visitReal", &GuideVisitor::visitReal)
-        .def("visitBoolean", &GuideVisitor::visitBoolean)
-        .def("visitName", &GuideVisitor::visitName)
-        .def("visitVariable", &GuideVisitor::visitVariable)
-        .def("visitConstant", &GuideVisitor::visitConstant)
-        .def("visitParameter", &GuideVisitor::visitParameter)
-        .def("visitComponentDefinition", 
-            &GuideVisitor::visitComponentDefinition)
-        .def("visitProposition", 
-            &GuideVisitor::visitProposition)
-        .def("visitBooleanConstant", 
-            &GuideVisitor::visitBooleanConstant)
-        .def("visitBinaryBooleanOperation", 
-            &GuideVisitor::visitBinaryBooleanOperation)
-        .def("visitUnaryBooleanOperation", 
-            &GuideVisitor::visitUnaryBooleanOperation)
-        .def("visitLargeBooleanFormula", 
-            &GuideVisitor::visitLargeBooleanFormula)
-        .def("visitModalFormula",
-            &GuideVisitor::visitModalFormula)
-        .def("visitUnaryTemporalOperation",
-            &GuideVisitor::visitUnaryTemporalOperation)
-        .def("visitBinaryTemporalOperation",
-            &GuideVisitor::visitBinaryTemporalOperation)
-        .def("visitContract", &GuideVisitor::visitContract)
-        .def("visitComponent", &GuideVisitor::visitComponent)
-        .def("visitGraph", &GuideVisitor::visitGraph)
-        .def("visitEdge", &GuideVisitor::visitEdge)
-        .def("visitVertex", &GuideVisitor::visitVertex);
+       // Utilities library.
+    auto u = k.def_submodule("utilities", 
+        "Wrapper for the Chase utilities library.");
 
     /**
     * SIMPLIFY
     */
 
-    m.def("simplify", &chase::simplify,
+    u.def("simplify", &chase::simplify,
             py::arg("object").none(false),
             py::arg("options").none(false));
 
 
     py::class_<simplify_options, std::unique_ptr<simplify_options,
-            py::nodelete>>(m, "simplify_options")
+            py::nodelete>>(u, "simplify_options")
             .def(py::init<bool&, bool&>(),
                     py::arg("_nots")=true,
                     py::arg("_temporal_operators")=true)
@@ -1084,92 +1039,216 @@ PYBIND11_MODULE(pychase, m) {
     /**
     * FACTORY BINDINGS
     */  
-    m.def("True", &chase::True);
-    m.def("False", &chase::False);
-    m.def("Not", &chase::Not,
+    u.def("True", &chase::True);
+    u.def("False", &chase::False);
+    u.def("Not", &chase::Not,
         py::arg("op").none(false));
-    m.def("And", &chase::And,
+    u.def("And", &chase::And,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Or", &chase::Or,
+    u.def("Or", &chase::Or,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Implies", &chase::Implies,
+    u.def("Implies", &chase::Implies,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Iff", &chase::Iff,
+    u.def("Iff", &chase::Iff,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Nand", &chase::Nand,
+    u.def("Nand", &chase::Nand,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Xor", &chase::Xor,
+    u.def("Xor", &chase::Xor,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Nor", &chase::Nor,
+    u.def("Nor", &chase::Nor,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Xnor", &chase::Xnor,
+    u.def("Xnor", &chase::Xnor,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("LargeAnd", &chase::LargeAnd,
+    u.def("LargeAnd", &chase::LargeAnd,
         py::arg("formulas").none(false));
-    m.def("LargeOr", &chase::LargeOr,
+    u.def("LargeOr", &chase::LargeOr,
         py::arg("formulas").none(false));
-    m.def("Always", &chase::Always,
+    u.def("Always", &chase::Always,
         py::arg("op").none(false));
-    m.def("Eventually", &chase::Eventually,
+    u.def("Eventually", &chase::Eventually,
         py::arg("op").none(false));
-    m.def("Next", &chase::Next,
+    u.def("Next", &chase::Next,
         py::arg("op").none(false));
-    m.def("Until", &chase::Until,
+    u.def("Until", &chase::Until,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Sum", &chase::Sum,
+    u.def("Sum", &chase::Sum,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Sub", &chase::Sub,
+    u.def("Sub", &chase::Sub,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Mult", &chase::Mult,
+    u.def("Mult", &chase::Mult,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Div", &chase::Div,
+    u.def("Div", &chase::Div,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Eq", &chase::Eq,
+    u.def("Eq", &chase::Eq,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("NEq", &chase::NEq,
+    u.def("NEq", &chase::NEq,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Eq", &chase::Eq,
+    u.def("Eq", &chase::Eq,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("LE", &chase::LE,
+    u.def("LE", &chase::LE,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("LT", &chase::LT,
+    u.def("LT", &chase::LT,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("GE", &chase::GE,
+    u.def("GE", &chase::GE,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("GT", &chase::GT,
+    u.def("GT", &chase::GT,
         py::arg("op1").none(false),
         py::arg("op2").none(false));
-    m.def("Prop", overload_cast_<Variable*>()
+    u.def("Prop", overload_cast_<Variable*>()
         (&chase::Prop), 
         py::arg("var").none(false));
-    m.def("Prop", overload_cast_<Expression*>()
+    u.def("Prop", overload_cast_<Expression*>()
         (&chase::Prop), 
         py::arg("var").none(false));
-    m.def("Id", &chase::Id,
+    u.def("Id", &chase::Id,
         py::arg("declaration").none(false));
-    m.def("intVal", &chase::IntVal,
+    u.def("intVal", &chase::IntVal,
         py::arg("n").none(false));
-    m.def("RealVal", &chase::RealVal,
+    u.def("RealVal", &chase::RealVal,
         py::arg("r").none(false));
-    m.def("BoolVal", &chase::BoolVal,
+    u.def("BoolVal", &chase::BoolVal,
         py::arg("b").none(false));    
+
+
+    // Messagges and IO Utils.
+    u.def("messageError", overload_cast_<const char *, chase::ChaseObject *>()
+        (&chase::messageError),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+    u.def("messageError", overload_cast_<std::string, chase::ChaseObject *>()
+        (&chase::messageError),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+
+    u.def("messageWarning", overload_cast_<const char *, chase::ChaseObject *>()
+        (&chase::messageWarning),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+    u.def("messageWarning", overload_cast_<std::string, chase::ChaseObject *>()
+        (&chase::messageWarning),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+
+    u.def("messageInfo", overload_cast_<const char *, chase::ChaseObject *>()
+        (&chase::messageInfo),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+    u.def("messageInfo", overload_cast_<std::string, chase::ChaseObject *>()
+        (&chase::messageError),
+        py::arg("msg").none(false),
+        py::arg("object").none(false));
+
+    // Base Visitor bindig.
+
+    py::class_<BaseVisitor, std::unique_ptr<BaseVisitor, py::nodelete>>
+        (u, "BaseVisitor")
+        .def("visitBinaryBooleanOperation", &BaseVisitor::visitBinaryBooleanOperation, py::arg("v").none(false))
+        .def("visitBinaryTemporalOperation", &BaseVisitor::visitBinaryTemporalOperation, py::arg("v").none(false))
+        .def("visitBoolean", &BaseVisitor::visitBoolean, py::arg("v").none(false))
+        .def("visitBooleanConstant", &BaseVisitor::visitBooleanConstant, py::arg("v").none(false))
+        .def("visitBooleanValue", &BaseVisitor::visitBooleanValue, py::arg("v").none(false))
+        .def("visitComponent", &BaseVisitor::visitComponent, py::arg("v").none(false))
+        .def("visitComponentDefinition", &BaseVisitor::visitComponentDefinition, py::arg("v").none(false))
+        .def("visitConstant", &BaseVisitor::visitConstant, py::arg("v").none(false))
+        .def("visitConstraint", &BaseVisitor::visitConstraint, py::arg("v").none(false))
+        .def("visitContract", &BaseVisitor::visitContract, py::arg("v").none(false))
+        .def("visitCustomType", &BaseVisitor::visitCustomType, py::arg("v").none(false))
+        .def("visitDesignProblem", &BaseVisitor::visitDesignProblem, py::arg("v").none(false))
+        .def("visitDistribution", &BaseVisitor::visitDistribution, py::arg("v").none(false))
+        .def("visitEdge", &BaseVisitor::visitEdge, py::arg("v").none(false))
+        .def("visitEnumeration", &BaseVisitor::visitEnumeration, py::arg("v").none(false))
+        .def("visitExpression", &BaseVisitor::visitExpression, py::arg("v").none(false))
+        .def("visitFunction", &BaseVisitor::visitFunction, py::arg("v").none(false))
+        .def("visitFunctionCall", &BaseVisitor::visitFunctionCall, py::arg("v").none(false))
+        .def("visitGraph", &BaseVisitor::visitGraph, py::arg("v").none(false))
+        .def("visitIdentifier", &BaseVisitor::visitIdentifier, py::arg("v").none(false))
+        .def("visitInteger", &BaseVisitor::visitInteger, py::arg("v").none(false))
+        .def("visitIntegerValue", &BaseVisitor::visitIntegerValue, py::arg("v").none(false))
+        .def("visitInterval", &BaseVisitor::visitInterval, py::arg("v").none(false))
+        .def("visitLargeBooleanFormula", &BaseVisitor::visitLargeBooleanFormula, py::arg("v").none(false))
+        .def("visitLibrary", &BaseVisitor::visitLibrary, py::arg("v").none(false))
+        .def("visitMatrix", &BaseVisitor::visitMatrix, py::arg("v").none(false))
+        .def("visitModalFormula", &BaseVisitor::visitModalFormula, py::arg("v").none(false))
+        .def("visitName", &BaseVisitor::visitName, py::arg("v").none(false))
+        .def("visitParameter", &BaseVisitor::visitParameter, py::arg("v").none(false))
+        .def("visitProbabilityFunction", &BaseVisitor::visitProbabilityFunction, py::arg("v").none(false))
+        .def("visitProposition", &BaseVisitor::visitProposition, py::arg("v").none(false))
+        .def("visitQuantifiedFormula", &BaseVisitor::visitQuantifiedFormula, py::arg("v").none(false))
+        .def("visitRange", &BaseVisitor::visitRange, py::arg("v").none(false))
+        .def("visitReal", &BaseVisitor::visitReal, py::arg("v").none(false))
+        .def("visitRealValue", &BaseVisitor::visitRealValue, py::arg("v").none(false))
+        .def("visitString", &BaseVisitor::visitString, py::arg("v").none(false))
+        .def("visitStringValue", &BaseVisitor::visitStringValue, py::arg("v").none(false))
+        .def("visitSystem", &BaseVisitor::visitSystem, py::arg("v").none(false))
+        .def("visitUnaryBooleanOperation", &BaseVisitor::visitUnaryBooleanOperation, py::arg("v").none(false))
+        .def("visitUnaryTemporalOperation", &BaseVisitor::visitUnaryTemporalOperation, py::arg("v").none(false))
+        .def("visitVariable", &BaseVisitor::visitVariable, py::arg("v").none(false))
+        .def("visitVertex", &BaseVisitor::visitVertex, py::arg("v").none(false));
+
+    // Guide visitor binding.
+    py::class_<GuideVisitor, std::unique_ptr<GuideVisitor, py::nodelete>, BaseVisitor>
+        (u, "GuideVisitor")
+        .def("visitBinaryBooleanOperation", &GuideVisitor::visitBinaryBooleanOperation, py::arg("v").none(false))
+        .def("visitBinaryTemporalOperation", &GuideVisitor::visitBinaryTemporalOperation, py::arg("v").none(false))
+        .def("visitBoolean", &GuideVisitor::visitBoolean, py::arg("v").none(false))
+        .def("visitBooleanConstant", &GuideVisitor::visitBooleanConstant, py::arg("v").none(false))
+        .def("visitBooleanValue", &GuideVisitor::visitBooleanValue, py::arg("v").none(false))
+        .def("visitComponent", &GuideVisitor::visitComponent, py::arg("v").none(false))
+        .def("visitComponentDefinition", &GuideVisitor::visitComponentDefinition, py::arg("v").none(false))
+        .def("visitConstant", &GuideVisitor::visitConstant, py::arg("v").none(false))
+        .def("visitConstraint", &GuideVisitor::visitConstraint, py::arg("v").none(false))
+        .def("visitContract", &GuideVisitor::visitContract, py::arg("v").none(false))
+        .def("visitCustomType", &GuideVisitor::visitCustomType, py::arg("v").none(false))
+        .def("visitDesignProblem", &GuideVisitor::visitDesignProblem, py::arg("v").none(false))
+        .def("visitDistribution", &GuideVisitor::visitDistribution, py::arg("v").none(false))
+        .def("visitEdge", &GuideVisitor::visitEdge, py::arg("v").none(false))
+        .def("visitEnumeration", &GuideVisitor::visitEnumeration, py::arg("v").none(false))
+        .def("visitExpression", &GuideVisitor::visitExpression, py::arg("v").none(false))
+        .def("visitFunction", &GuideVisitor::visitFunction, py::arg("v").none(false))
+        .def("visitFunctionCall", &GuideVisitor::visitFunctionCall, py::arg("v").none(false))
+        .def("visitGraph", &GuideVisitor::visitGraph, py::arg("v").none(false))
+        .def("visitIdentifier", &GuideVisitor::visitIdentifier, py::arg("v").none(false))
+        .def("visitInteger", &GuideVisitor::visitInteger, py::arg("v").none(false))
+        .def("visitIntegerValue", &GuideVisitor::visitIntegerValue, py::arg("v").none(false))
+        .def("visitInterval", &GuideVisitor::visitInterval, py::arg("v").none(false))
+        .def("visitLargeBooleanFormula", &GuideVisitor::visitLargeBooleanFormula, py::arg("v").none(false))
+        .def("visitLibrary", &GuideVisitor::visitLibrary, py::arg("v").none(false))
+        .def("visitMatrix", &GuideVisitor::visitMatrix, py::arg("v").none(false))
+        .def("visitModalFormula", &GuideVisitor::visitModalFormula, py::arg("v").none(false))
+        .def("visitName", &GuideVisitor::visitName, py::arg("v").none(false))
+        .def("visitParameter", &GuideVisitor::visitParameter, py::arg("v").none(false))
+        .def("visitProbabilityFunction", &GuideVisitor::visitProbabilityFunction, py::arg("v").none(false))
+        .def("visitProposition", &GuideVisitor::visitProposition, py::arg("v").none(false))
+        .def("visitQuantifiedFormula", &GuideVisitor::visitQuantifiedFormula, py::arg("v").none(false))
+        .def("visitRange", &GuideVisitor::visitRange, py::arg("v").none(false))
+        .def("visitReal", &GuideVisitor::visitReal, py::arg("v").none(false))
+        .def("visitRealValue", &GuideVisitor::visitRealValue, py::arg("v").none(false))
+        .def("visitString", &GuideVisitor::visitString, py::arg("v").none(false))
+        .def("visitStringValue", &GuideVisitor::visitStringValue, py::arg("v").none(false))
+        .def("visitSystem", &GuideVisitor::visitSystem, py::arg("v").none(false))
+        .def("visitUnaryBooleanOperation", &GuideVisitor::visitUnaryBooleanOperation, py::arg("v").none(false))
+        .def("visitUnaryTemporalOperation", &GuideVisitor::visitUnaryTemporalOperation, py::arg("v").none(false))
+        .def("visitVariable", &GuideVisitor::visitVariable, py::arg("v").none(false))
+        .def("visitVertex", &GuideVisitor::visitVertex, py::arg("v").none(false));
+
 }
+

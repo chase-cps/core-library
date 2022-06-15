@@ -99,6 +99,7 @@ namespace chase{
             virtual int visitGraph(Graph &);
             virtual int visitEdge( Edge & );
             virtual int visitVertex(Vertex &);
+            virtual int visitWeightedEdge(WeightedEdge &);
             /// @endcond
 
     };

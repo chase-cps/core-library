@@ -427,6 +427,45 @@ int chase::GuideVisitor::visitProbabilityFunction(
     return function.getSpecification()->accept_visitor(*this);
 }
 
+int chase::GuideVisitor::visitDesignProblem(chase::DesignProblem &problem) {
+    return problem.getSystem()->accept_visitor(*this);
+}
+
+int chase::GuideVisitor::visitFunctionCall(chase::FunctionCall &call) {
+    int rv = 1;
+    auto size = call.getFunction()->getArity();
+    for(unsigned int i = 0; i < size; ++i) {
+        auto p = call.parameter(i);
+        if (p != nullptr) rv |= p->accept_visitor(*this);
+    }
+    return rv;
+}
+
+int chase::GuideVisitor::visitFunction(chase::Function &function) {
+    int rv = 1;
+    auto size = function.getArity();
+    for(unsigned int i = 0; i < size; ++i)
+        rv |= function.getDomainOfParameter(i)->accept_visitor(*this);
+    return rv;
+}
+
+int chase::GuideVisitor::visitConstraint(chase::Constraint &constraint) {
+    return constraint.getExpression()->accept_visitor(*this);
+}
+
+int chase::GuideVisitor::visitLibrary(chase::Library &library) {
+    int rv = 1;
+    for(auto i : library.declarations)
+        rv |= i->accept_visitor(*this);
+    return rv;
+}
+
+int chase::GuideVisitor::visitWeightedEdge(chase::WeightedEdge &edge) {
+    int rv = BaseVisitor::visitEdge(edge);
+    rv |= edge.getWeight()->accept_visitor(*this);
+    return rv;
+}
+
 
 
 

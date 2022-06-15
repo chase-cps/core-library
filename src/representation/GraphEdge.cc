@@ -37,6 +37,11 @@ int Edge::accept_visitor(chase::BaseVisitor &v) {
     return v.visitEdge(*this);
 }
 
+int WeightedEdge::accept_visitor(chase::BaseVisitor &v) {
+    return v.visitWeightedEdge(*this);
+}
+
+
 std::string Edge::getString() {
     std::string ret = std::to_string(_source);
     auto * p = dynamic_cast<Graph *>(_parent);

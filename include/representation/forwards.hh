@@ -49,6 +49,7 @@ namespace chase {
     class QuantifiedFormula;
     class Contract;
     class Edge;
+    class WeightedEdge;
     class Vertex;
     class Graph;
     class LargeBooleanFormula;

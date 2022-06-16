@@ -35,5 +35,4 @@ namespace chase {
         LogicFormula * _analyzeFormula(LogicFormula * formula);
 
     };
-
 }

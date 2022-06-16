@@ -18,7 +18,7 @@ chase::GuideVisitor::GuideVisitor(int rv) :
 
 int chase::GuideVisitor::visitRange(chase::Range &)
 {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitIntegerValue(chase::IntegerValue &o )
@@ -50,21 +50,21 @@ int chase::GuideVisitor::visitIdentifier(chase::Identifier &o)
 
 int chase::GuideVisitor::visitInteger(chase::Integer & )
 {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitReal(chase::Real & )
 {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitBoolean(chase::Boolean & )
 {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitName(chase::Name & ) {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitVariable(chase::Variable &o) {
@@ -88,7 +88,7 @@ int chase::GuideVisitor::visitProposition(chase::Proposition &o) {
 }
 
 int chase::GuideVisitor::visitBooleanConstant(chase::BooleanConstant &) {
-    return _rv;
+    return 0;
 }
 
 int chase::GuideVisitor::visitBinaryBooleanOperation(
@@ -140,14 +140,14 @@ int chase::GuideVisitor::visitContract(chase::Contract &o)
 
     rv |= visitList(o.declarations);
 
-    for (auto it = o.assumptions.begin(); it != o.assumptions.end(); ++it)
+    for (auto & assumption : o.assumptions)
     {
-        rv |= continueVisit((*it).second);
+        rv |= continueVisit(assumption.second);
     }
 
-    for (auto it = o.guarantees.begin(); it != o.guarantees.end(); ++it)
+    for (auto & guarantee : o.guarantees)
     {
-        rv |= continueVisit((*it).second);
+        rv |= continueVisit(guarantee.second);
     }
 
     return rv;
@@ -155,7 +155,7 @@ int chase::GuideVisitor::visitContract(chase::Contract &o)
 
 int chase::GuideVisitor::visitEdge(chase::Edge &o)
 {
-    WeightedEdge * w = dynamic_cast< WeightedEdge * >(&o);
+    auto * w = dynamic_cast< WeightedEdge * >(&o);
     if( w != nullptr )
         return continueVisit( w->getWeight() );
     else
@@ -318,19 +318,19 @@ int chase::GuideVisitor::visitSystem(chase::System &o)
 {
     int rv = 0;
     auto declarations = o.getDeclarationsSet();
-    for(auto i = declarations.begin(); i != declarations.end(); ++i)
+    for(auto & declaration : declarations)
     {
-        rv |= (*i)->accept_visitor(*this);
+        rv |= declaration->accept_visitor(*this);
     }
     auto contracts = o.getContractsSet();
-    for(auto i = contracts.begin(); i != contracts.end(); ++i)
+    for(auto contract : contracts)
     {
-        rv |= (*i)->accept_visitor(*this);
+        rv |= contract->accept_visitor(*this);
     }
     auto components = o.getComponentsSet();
-    for(auto i = components.begin(); i != components.end(); ++i)
+    for(auto component : components)
     {
-        rv |= (*i)->accept_visitor(*this);
+        rv |= component->accept_visitor(*this);
     }
     return rv;
 }
@@ -339,9 +339,9 @@ int chase::GuideVisitor::visitComponentDefinition(
         chase::ComponentDefinition &o)
 {
     int rv = visitName( * o.getName());
-    for( auto i = o.views.begin(); i != o.views.end(); ++i )
+    for(auto & i : o.views)
     {
-        Contract * view = i->second;
+        Contract * view = i.second;
         rv |= view->accept_visitor(*this);
     }
     return rv;
@@ -365,9 +365,9 @@ int chase::GuideVisitor::visitComponent(chase::Component &o)
         std::string v = i->first;
 
         auto m = o.getParametersInView(v);
-        for(auto j = m.begin(); j != m.end(); ++j )
+        for(auto & j : m)
         {
-            rv |= j->second->accept_visitor(*this);
+            rv |= j.second->accept_visitor(*this);
         }
     }
     return rv;
@@ -398,7 +398,7 @@ int chase::GuideVisitor::visitInterval(chase::Interval &o ) {
 }
 
 int chase::GuideVisitor::visitMatrix(chase::Matrix &matrix) {
-    int rv = 1;
+    int rv = 0;
     for(size_t i = 1; i <= matrix.getRows(); ++i)
         for(size_t j = 1; j <= matrix.getColumns(); ++j)
             rv |= matrix.at(i,j)->accept_visitor(*this);
@@ -412,7 +412,7 @@ int chase::GuideVisitor::visitDistribution(chase::Distribution &distribution) {
     {
         it.second->accept_visitor(*this);
     }
-    return 1;
+    return 0;
 }
 
 int chase::GuideVisitor::visitQuantifiedFormula(
@@ -432,7 +432,7 @@ int chase::GuideVisitor::visitDesignProblem(chase::DesignProblem &problem) {
 }
 
 int chase::GuideVisitor::visitFunctionCall(chase::FunctionCall &call) {
-    int rv = 1;
+    int rv = 0;
     auto size = call.getFunction()->getArity();
     for(unsigned int i = 0; i < size; ++i) {
         auto p = call.parameter(i);
@@ -442,7 +442,7 @@ int chase::GuideVisitor::visitFunctionCall(chase::FunctionCall &call) {
 }
 
 int chase::GuideVisitor::visitFunction(chase::Function &function) {
-    int rv = 1;
+    int rv = 0;
     auto size = function.getArity();
     for(unsigned int i = 0; i < size; ++i)
         rv |= function.getDomainOfParameter(i)->accept_visitor(*this);
@@ -454,7 +454,7 @@ int chase::GuideVisitor::visitConstraint(chase::Constraint &constraint) {
 }
 
 int chase::GuideVisitor::visitLibrary(chase::Library &library) {
-    int rv = 1;
+    int rv = 0;
     for(auto i : library.declarations)
         rv |= i->accept_visitor(*this);
     return rv;

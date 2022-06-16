@@ -27,4 +27,5 @@ message("${CMAKE_CURRENT_BINARY_DIR}")
 install(
     DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/apidoc/html
     DESTINATION chase/doc/core-library
+    OPTIONAL
     )

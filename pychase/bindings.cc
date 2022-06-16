@@ -1161,6 +1161,7 @@ PYBIND11_MODULE(pychase, k) {
 
     py::class_<BaseVisitor, std::unique_ptr<BaseVisitor, py::nodelete>>
         (u, "BaseVisitor")
+        .def(py::init<>())
         .def("visitBinaryBooleanOperation", &BaseVisitor::visitBinaryBooleanOperation, py::arg("v").none(false))
         .def("visitBinaryTemporalOperation", &BaseVisitor::visitBinaryTemporalOperation, py::arg("v").none(false))
         .def("visitBoolean", &BaseVisitor::visitBoolean, py::arg("v").none(false))
@@ -1207,6 +1208,7 @@ PYBIND11_MODULE(pychase, k) {
     // Guide visitor binding.
     py::class_<GuideVisitor, std::unique_ptr<GuideVisitor, py::nodelete>, BaseVisitor>
         (u, "GuideVisitor")
+        .def(py::init<int>(), py::arg("rv")=0)
         .def("visitBinaryBooleanOperation", &GuideVisitor::visitBinaryBooleanOperation, py::arg("v").none(false))
         .def("visitBinaryTemporalOperation", &GuideVisitor::visitBinaryTemporalOperation, py::arg("v").none(false))
         .def("visitBoolean", &GuideVisitor::visitBoolean, py::arg("v").none(false))
@@ -1249,6 +1251,16 @@ PYBIND11_MODULE(pychase, k) {
         .def("visitUnaryTemporalOperation", &GuideVisitor::visitUnaryTemporalOperation, py::arg("v").none(false))
         .def("visitVariable", &GuideVisitor::visitVariable, py::arg("v").none(false))
         .def("visitVertex", &GuideVisitor::visitVertex, py::arg("v").none(false));
+
+    py::class_<ClonedDeclarationVisitor, 
+        std::unique_ptr<ClonedDeclarationVisitor, py::nodelete>, 
+        GuideVisitor>(u, "ClonedDeclarationVisitor")
+        .def(py::init< std::map< Declaration *, Declaration * >& >(),
+            py::arg("m").none(false))
+        .def("visitIdentifier", &ClonedDeclarationVisitor::visitIdentifier,
+            py::arg("o").none(false));
+
+        
 
 }
 

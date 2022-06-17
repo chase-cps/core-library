@@ -1260,7 +1260,59 @@ PYBIND11_MODULE(pychase, k) {
         .def("visitIdentifier", &ClonedDeclarationVisitor::visitIdentifier,
             py::arg("o").none(false));
 
-        
+    u.def("getSubGraph", &chase::getSubGraph,
+        py::arg("graph").none(false),
+        py::arg("vertexes").none(false));
 
+    u.def("findAllPathsBetweenNodes", &chase::findAllPathsBetweenNodes,
+        py::arg("graph").none(false),
+        py::arg("visited").none(false),
+        py::arg("end").none(false),
+        py::arg("result").none(false));
+
+    py::class_<LogicSimplificationVisitor,
+        std::unique_ptr<LogicSimplificationVisitor, py::nodelete>,
+        GuideVisitor>(u, "LogicSimplificationVisitor")
+        .def("visitBinaryBooleanOperation", 
+            &LogicSimplificationVisitor::visitBinaryBooleanOperation,
+            py::arg("formula").none(false))
+        .def("visitUnaryBooleanOperation", 
+            &LogicSimplificationVisitor::visitUnaryBooleanOperation,
+            py::arg("formula").none(false))
+        .def("visitLargeBooleanFormula", 
+            &LogicSimplificationVisitor::visitLargeBooleanFormula,
+            py::arg("formula").none(false))
+        .def("visitUnaryTemporalOperation", 
+            &LogicSimplificationVisitor::visitUnaryTemporalOperation,
+            py::arg("formula").none(false))
+        .def("visitBinaryTemporalOperation", 
+            &LogicSimplificationVisitor::visitBinaryTemporalOperation,
+            py::arg("formula").none(false));
+
+    py::class_<GroupTemporalOperatorsVisitor,
+        std::unique_ptr<GroupTemporalOperatorsVisitor, py::nodelete>,
+        LogicSimplificationVisitor>(u, "GroupTemporalOperatorsVisitor")
+        .def(py::init<>());
+
+    py::class_<LogicNotNormalizationVisitor,
+        std::unique_ptr<LogicNotNormalizationVisitor, py::nodelete>,
+        LogicSimplificationVisitor>(u, "LogicNotNormalizationVisitor")
+        .def(py::init<>());
+
+    py::class_<VarsCausalityVisitor,
+        std::unique_ptr<VarsCausalityVisitor, py::nodelete>,
+        GuideVisitor>(u, "VarsCausalityVisitor")
+        .def(py::init<Contract*>(),
+            py::arg("contract")=nullptr)
+        .def("getContract", &VarsCausalityVisitor::getContract)
+        .def("setContract", &VarsCausalityVisitor::setContract,
+            py::arg("Contract").none(false))
+        .def("visitVariable", &VarsCausalityVisitor::visitVariable,
+            py::arg("variable").none(false))
+        .def("visitContract", &VarsCausalityVisitor::visitContract,
+            py::arg("contract").none(false))
+        .def("visitIdentifier", &VarsCausalityVisitor::visitIdentifier,
+            py::arg("identifier").none(false));
+    
 }
 

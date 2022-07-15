@@ -685,7 +685,8 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &LargeBooleanFormula::getString)
         .def("accept_visitor", &LargeBooleanFormula::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &LargeBooleanFormula::clone);
+        .def("clone", &LargeBooleanFormula::clone)
+        .def_readwrite("operands", &LargeBooleanFormula::operands);
 
     // ModalFormula
     py::class_<ModalFormula,

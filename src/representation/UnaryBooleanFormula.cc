@@ -38,7 +38,8 @@ int UnaryBooleanFormula::accept_visitor(chase::BaseVisitor &v) {
 }
 
 std::string UnaryBooleanFormula::getString() {
-    std::string ret = std::to_string(_op);
+    std::string ret;
+    if(_op == op_not) ret += "NOT";
     ret += "(";
     ret += _op1->getString();
     ret += ")";

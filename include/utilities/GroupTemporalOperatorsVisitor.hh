@@ -28,7 +28,7 @@ namespace chase {
         /// @brief Interface for the main optimization function.
         /// @param formula The formula to analyze and, eventually, simplify.
         /// @return Pointer to the simplified formula.
-        LogicFormula *_analyzeFormula(LogicFormula *formula) override;
+        LogicFormula *_analyzeFormula(LogicFormula *formula);
 
     };
 

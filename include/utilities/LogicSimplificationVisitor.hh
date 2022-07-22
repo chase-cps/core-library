@@ -29,6 +29,9 @@ namespace chase {
         int visitUnaryTemporalOperation(UnaryTemporalFormula &formula) override;
         int
         visitBinaryTemporalOperation(BinaryTemporalFormula &formula) override;
+
+        int visitContract(Contract &contract) override;
+
         /// @endcond
 
     protected:
@@ -36,7 +39,7 @@ namespace chase {
         /// @brief Interface for the main optimization function.
         /// @param formula The formula to analyze and, eventually, simplify.
         /// @return Pointer to the simplified formula.
-        virtual LogicFormula * _analyzeFormula(LogicFormula * formula) = 0;
+        virtual LogicFormula * _analyzeFormula(LogicFormula * formula);
 
     };
 

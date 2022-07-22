@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "LogicFormula.hh"
-#include "LogicSimplificationVisitor.hh"
+#include "representation/LogicFormula.hh"
+#include "utilities/LogicSimplificationVisitor.hh"
 
 
 

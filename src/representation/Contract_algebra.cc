@@ -33,7 +33,6 @@ void Contract:: mergeDeclarations(
     for(auto original : c2->declarations)
     {
         std::string name = original->getName()->getString();
-        std::cout << name << std::endl;
         auto found = correspondences.find(name);
 
         if( found == correspondences.end())
@@ -379,7 +378,7 @@ void Contract::saturateLogic(Contract * c )
     }
 
     if(assumptions != nullptr ) {
-        guarantees = Implies(assumptions->clone(), guarantees);
+        guarantees = Or(Not(assumptions->clone()), guarantees);
     }else{
         return; // No saturation necessary.
     }

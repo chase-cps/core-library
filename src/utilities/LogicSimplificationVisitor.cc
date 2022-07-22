@@ -8,6 +8,7 @@
 
 #include "utilities/LogicSimplificationVisitor.hh"
 #include "representation.hh"
+#include "Factory.hh"
 
 using namespace chase;
 
@@ -15,6 +16,33 @@ LogicSimplificationVisitor::LogicSimplificationVisitor() {
 }
 
 LogicSimplificationVisitor::~LogicSimplificationVisitor() {
+}
+
+
+int LogicSimplificationVisitor::visitContract(Contract &contract)
+{
+    int rv = 0;
+
+    auto it = contract.assumptions.find(logic);
+    if(it != contract.assumptions.end()){
+        auto spec = it->second;
+        auto formula = static_cast< LogicFormula * >(spec);
+        if(formula != nullptr){
+            it->second = _analyzeFormula(formula);
+        }
+    }
+
+    it = contract.guarantees.find(logic);
+    if(it != contract.guarantees.end()){
+        auto spec = it->second;
+        auto formula = static_cast< LogicFormula * >(spec);
+        if(formula != nullptr){
+            formula->accept_visitor(*this);
+            it->second = _analyzeFormula(formula);
+        }
+    }
+
+    return rv;
 }
 
 int LogicSimplificationVisitor::visitBinaryBooleanOperation(
@@ -86,4 +114,19 @@ int LogicSimplificationVisitor::visitBinaryTemporalOperation(
     rv |= formula.getFormula2()->accept_visitor(*this);
 
     return rv;
+}
+
+LogicFormula * LogicSimplificationVisitor::_analyzeFormula(
+    LogicFormula * formula ){
+    if(formula->IsA() == largeBooleanFormula_node)
+    {
+        auto lbf = static_cast< LargeBooleanFormula * >(formula);
+        if(lbf->operands.size() == 1) {
+            return lbf->operands[0];
+        }
+        if(lbf->operands.size() == 2){
+            return And(lbf->operands[0], lbf->operands[1]);
+        }
+    }
+    return formula;
 }

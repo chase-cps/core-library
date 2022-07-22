@@ -16,6 +16,8 @@ chase::BinaryBooleanFormula::BinaryBooleanFormula(
         _op2(op2)
 {
     _node_type = binaryBooleanOperation_node;
+    _op1->setParent(this);
+    _op2->setParent(this);
 }
 
 BooleanOperator BinaryBooleanFormula::getOp() const {
@@ -32,6 +34,7 @@ LogicFormula *BinaryBooleanFormula::getOp1() const {
 
 void BinaryBooleanFormula::setOp1(LogicFormula *op1) {
     _op1 = op1;
+    _op1->setParent(this);
 }
 
 LogicFormula *BinaryBooleanFormula::getOp2() const {
@@ -40,6 +43,7 @@ LogicFormula *BinaryBooleanFormula::getOp2() const {
 
 void BinaryBooleanFormula::setOp2(LogicFormula *op2) {
     _op2 = op2;
+    _op2->setParent(this);
 }
 
 int BinaryBooleanFormula::accept_visitor(chase::BaseVisitor &v) {

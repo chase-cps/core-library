@@ -21,6 +21,9 @@ void chase::simplify(
         chase::ChaseObject * object,
         simplify_options * options)
 {
+    LogicSimplificationVisitor lsv;
+    object->accept_visitor(lsv);
+
     if(options->nots) {
         LogicNotNormalizationVisitor v;
         object->accept_visitor(v);

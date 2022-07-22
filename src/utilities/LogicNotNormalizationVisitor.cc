@@ -23,8 +23,6 @@ LogicNotNormalizationVisitor::LogicNotNormalizationVisitor() :
 
 LogicNotNormalizationVisitor::~LogicNotNormalizationVisitor() = default;
 
-
-
 LogicFormula *
 LogicNotNormalizationVisitor::_analyzeFormula(LogicFormula *formula)
 {
@@ -103,12 +101,11 @@ LogicNotNormalizationVisitor::_analyzeFormula(LogicFormula *formula)
             if( f->IsA() == largeBooleanFormula_node )
             {
                 auto inner = static_cast< LargeBooleanFormula * >(f);
-
                 for(size_t i = 0; i < inner->operands.size(); ++i)
                 {
+                    inner->operands[i]->accept_visitor(*this);
                     inner->operands[i] =
                             Not(inner->operands[i]);
-                    simplify(inner->operands[i]);
                 }
                 auto op = inner->getOp();
                 switch(op) {
@@ -121,6 +118,10 @@ LogicNotNormalizationVisitor::_analyzeFormula(LogicFormula *formula)
                     default:
                         break;
                 }
+                
+                std::cout << "-----------------------" << std::endl;
+                std::cout << inner->getString() << std::endl;
+                std::cout << "-----------------------" << std::endl;
                 return inner;
             }
             if (f->IsA() == proposition_node)

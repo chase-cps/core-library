@@ -75,7 +75,29 @@ int LargeBooleanFormula::accept_visitor(chase::BaseVisitor &v)
 
 std::string LargeBooleanFormula::getString()
 {
-    std::string ret("AND(\n");
+    std::string ret("");
+    switch( _op )
+    {
+        case op_and:
+            ret += "AND(\n";
+            break;
+        case op_or:
+            ret += "OR(\n";
+            break;
+        case op_xor:
+            ret += "XOR(\n";
+            break;
+        case op_nand:
+            ret += "NAND(\n";
+            break;
+        case op_nor:
+            ret += "NOR(\n";
+            break;
+        default:
+            ret += "INVALID_OP(\n";
+            break;
+    }
+    
     for(size_t i = 0; i < operands.size(); ++i){
         ret += "\t";
         ret += operands[i]->getString();

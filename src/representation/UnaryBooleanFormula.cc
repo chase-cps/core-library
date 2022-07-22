@@ -15,6 +15,7 @@ chase::UnaryBooleanFormula::UnaryBooleanFormula(
         _op1(op1)
 {
     _node_type = unaryBooleanOperation_node;
+    _op1->setParent(this);
 }
 
 BooleanOperator UnaryBooleanFormula::getOp() const {
@@ -31,6 +32,7 @@ LogicFormula *UnaryBooleanFormula::getOp1() const {
 
 void UnaryBooleanFormula::setOp1(LogicFormula *op1) {
     _op1 = op1;
+    _op1->setParent(this);
 }
 
 int UnaryBooleanFormula::accept_visitor(chase::BaseVisitor &v) {

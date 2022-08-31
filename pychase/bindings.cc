@@ -206,7 +206,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("clone", &Enumeration::clone);
 
     // Boolean Type
-    py::class_<Boolean, std::unique_ptr<Boolean>, SimpleType>
+    py::class_<Boolean, std::unique_ptr<Boolean, py::nodelete>, SimpleType>
         (m, "Boolean")
         .def(py::init<>())
         .def("accept_visitor", &Boolean::accept_visitor,
@@ -1118,8 +1118,7 @@ PYBIND11_MODULE(pychase, k) {
         (&chase::Prop), 
         py::arg("var").none(false));
     u.def("Prop", overload_cast_<Expression*>()
-        (&chase::Prop), 
-        py::arg("var").none(false));
+        (&chase::Prop), py::arg("exp").none(false));
     u.def("Id", &chase::Id,
         py::arg("declaration").none(false));
     u.def("intVal", &chase::IntVal,

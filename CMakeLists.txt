@@ -156,23 +156,22 @@ include(GNUInstallDirs)
 set(LIB_INSTALL_DIR chase/lib  CACHE STRING ¨¨)
 set(INCLUDE_INSTALL_DIR chase  CACHE STRING ¨¨)
 
-
-
-
+add_custom_target(install_chase
+        "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install
+        DEPENDS ${chase}
+        DEPENDS ${pychase}
+        COMMENT "Installing CHASE core library")
 
 install(
     DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION ${INCLUDE_INSTALL_DIR}/include
-    )
+)
 
 install(
     TARGETS chase
     EXPORT chaseTargets
     DESTINATION ${LIB_INSTALL_DIR}
     )
-
-
-
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file( 

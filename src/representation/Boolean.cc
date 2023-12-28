@@ -20,8 +20,7 @@ Boolean::Boolean() :
 }
 
 Boolean::~Boolean()
-{
-}
+= default;
 
 
 int Boolean::accept_visitor( BaseVisitor &v )

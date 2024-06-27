@@ -6,7 +6,6 @@
  */
 #include "representation/BinaryBooleanFormula.hh"
 
-
 using namespace chase;
 
 chase::BinaryBooleanFormula::BinaryBooleanFormula(

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "Declaration.hh"
 #include "Scope.hh"
 #include <map>
 #include <set>

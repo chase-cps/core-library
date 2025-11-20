@@ -5,63 +5,57 @@
  *
  */
 
-
 #pragma once
 
 #include "Declaration.hh"
 #include "Scope.hh"
 #include <map>
 #include <set>
-
+#include <string>
 
 namespace chase {
 
-    /// @brief Forward declaration of the Component class.
-    class Component;
+/// @brief Forward declaration of the Component class.
+class Component;
 
-    /// @brief Class representing the definition of a component.
-    class ComponentDefinition : public Scope {
-    public:
+/// @brief Class representing the definition of a component.
+class ComponentDefinition : public Scope {
+public:
+  /// @brief Set of views of the component.
+  std::map<std::string, Contract *> views;
 
-        /// @brief Set of views of the component.
-        std::map<std::string, Contract *> views;
+  /// @brief Set of subcomponents of the component.
+  /// Implements the hierarchy.
+  std::set<Component *> subcomponents;
 
+  /// @brief Constructor.
+  ComponentDefinition();
 
-        /// @brief Set of subcomponents of the component.
-        /// Implements the hierarchy.
-        std::set< Component * > subcomponents;
+  /// @brief Constructor.
+  /// @param name The name of the component definition.
+  explicit ComponentDefinition(Name *name);
 
-        /// @brief Constructor.
-        ComponentDefinition();
+  /// @brief Constructor.
+  /// @param name The name of the component definition (string).
+  explicit ComponentDefinition(std::string name);
 
-        /// @brief Constructor.
-        /// @param name The name of the component definition.
-        explicit ComponentDefinition(Name *name);
+  /// @brief Destructor.
+  ~ComponentDefinition() override;
 
-        /// @brief Constructor.
-        /// @param name The name of the component definition (string).
-        explicit ComponentDefinition(std::string name);
+  /// @brief Function to accept a visitor.
+  /// @param v The visitor to be accepted.
+  /// @return The default return value of the visitor.
+  int accept_visitor(chase::BaseVisitor &v) override;
 
-        /// @brief Destructor.
-        ~ComponentDefinition() override;
+  /// @brief Function transforming the definition into a string.
+  /// @return The string representation of the declaration.
+  std::string getString() override;
 
-        /// @brief Function to accept a visitor.
-        /// @param v The visitor to be accepted.
-        /// @return The default return value of the visitor.
-        int accept_visitor(chase::BaseVisitor &v) override;
+  /// @brief Clone method.
+  /// @return A copy of the declaration.
+  ComponentDefinition *clone() override;
 
-        /// @brief Function transforming the definition into a string.
-        /// @return The string representation of the declaration.
-        std::string getString() override;
+protected:
+};
 
-        /// @brief Clone method.
-        /// @return A copy of the declaration.
-        ComponentDefinition *clone() override;
-
-    protected:
-
-    };
-
-
-
-}
+} // namespace chase

@@ -22,8 +22,14 @@ project (CHASE VERSION 1.0.0)
 find_package(PythonLibs REQUIRED)
 find_package(pybind11 REQUIRED)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(ENABLE_TESTS "Enable building tests" ON)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 # Set a default build type if none was specified
 set(default_build_type "Release")

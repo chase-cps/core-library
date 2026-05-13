@@ -122,14 +122,14 @@ BooleanConstant * chase::False() {
 LargeBooleanFormula * chase::LargeAnd(std::vector<LogicFormula *> &formulas) {
     auto ret = new LargeBooleanFormula(op_and);
     for(auto f = formulas.begin(); f != formulas.end(); ++f)
-        ret->operands.push_back(*f);
+        ret->addOperand(*f);
     return ret;
 }
 
 LargeBooleanFormula * chase::LargeOr(std::vector<LogicFormula *> &formulas) {
     auto ret = new LargeBooleanFormula(op_or);
     for(auto f = formulas.begin(); f != formulas.end(); ++f)
-        ret->operands.push_back(*f);
+        ret->addOperand(*f);
     return ret;
 }
 

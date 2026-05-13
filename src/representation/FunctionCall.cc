@@ -31,6 +31,12 @@ std::string FunctionCall::getString() {
 
 FunctionCall *FunctionCall::clone() {
     auto ret = new FunctionCall();
+    ret->setFunction(_function, false);
+    ret->_parameters.clear();
+    ret->_parameters.reserve(_parameters.size());
+    for(auto & parameter : _parameters)
+        ret->_parameters.emplace_back(
+                parameter != nullptr ? parameter->clone() : nullptr);
     return ret;
 }
 
@@ -40,19 +46,23 @@ Function *FunctionCall::getFunction() const {
 
 void FunctionCall::setFunction(Function *function, bool initialize) {
     _function = function;
-    if(initialize || _parameters.empty())
-        for(size_t i = 0; i < function->getArity(); ++i)
-            _parameters[i] = nullptr;
+    if(function != nullptr && (initialize || _parameters.empty()))
+    {
+        _parameters.clear();
+        _parameters.resize(function->getArity());
+    }
 }
 
 Value *FunctionCall::parameter(size_t i, Value *value) {
+    if(_function == nullptr || i >= _parameters.size()) return nullptr;
     if(value != nullptr)
     {
         if(i >= _function->getArity()) {
             messageWarning("The index is greater the function arity.");
             return nullptr;
         }
-        _parameters[i] = value;
+        _parameters[i].reset(value);
+        value->setParent(this);
     }
-    return _parameters[i];
+    return _parameters[i].get();
 }

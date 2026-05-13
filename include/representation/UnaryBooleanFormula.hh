@@ -9,6 +9,8 @@
 #include "representation/LogicFormula.hh"
 #include "representation/Operators.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief The class represent all the Boolean unary operations.
@@ -50,13 +52,15 @@ namespace chase {
         /// @return The cloned object.
         UnaryBooleanFormula * clone() override;
 
+        std::unique_ptr<LogicFormula> releaseOp1();
+
     protected:
 
         /// @brief The temporal operator.
         BooleanOperator _op;
 
         /// @brief The formula to which apply the operator.
-        LogicFormula * _op1;
+        std::unique_ptr<LogicFormula> _op1;
 
     };
 

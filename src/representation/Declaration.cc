@@ -26,7 +26,7 @@ Declaration::Declaration( Name * n ) :
     _name(n)
 {
     _node_type = declaration_node;
-    _name->setParent(this);
+    if(_name != nullptr) _name->setParent(this);
 }
 
 Declaration::Declaration( std::string n ) :
@@ -38,12 +38,15 @@ Declaration::Declaration( std::string n ) :
 
 Name * Declaration::getName()
 {
-    return _name;
+    return _name.get();
 }
 
 void Declaration::setName( Name * n )
 {
-    _name = n;
-    _name->setParent(this);
+    if(_name.get() == n) {
+        if(_name != nullptr) _name->setParent(this);
+        return;
+    }
+    _name.reset(n);
+    if(_name != nullptr) _name->setParent(this);
 }
-

@@ -14,13 +14,12 @@ ModalFormula::ModalFormula(ModalOperator op, LogicFormula * formula) :
     _formula(formula)
 {
     _node_type = modalFormula_node;
-    if( formula->getParent() != nullptr )
+    if( formula != nullptr && formula->getParent() != nullptr )
         messageWarning("Formula with parent already set:", formula);
-    formula->setParent(this);
+    if(_formula != nullptr) _formula->setParent(this);
 }
 
-ModalFormula::~ModalFormula() {
-}
+ModalFormula::~ModalFormula() = default;
 
 ModalOperator ModalFormula::getOperator()
 {
@@ -33,12 +32,17 @@ void ModalFormula::setOperator(ModalOperator op) {
 
 LogicFormula * ModalFormula::getFormula()
 {
-    return _formula;
+    return _formula.get();
 }
 
 void ModalFormula::setFormula(LogicFormula * formula)
 {
-    _formula = formula;
+    if(_formula.get() == formula) {
+        if(_formula != nullptr) _formula->setParent(this);
+        return;
+    }
+    _formula.reset(formula);
+    if(_formula != nullptr) _formula->setParent(this);
 }
 
 int ModalFormula::accept_visitor(chase::BaseVisitor &v) {
@@ -55,7 +59,13 @@ std::string ModalFormula::getString() {
 
 ModalFormula *ModalFormula::clone()
 {
-    return new ModalFormula(_operator, _formula->clone());
+    return new ModalFormula(
+            _operator, _formula != nullptr ? _formula->clone() : nullptr);
 }
 
-
+std::unique_ptr<LogicFormula> ModalFormula::releaseFormula()
+{
+    auto ret = std::move(_formula);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}

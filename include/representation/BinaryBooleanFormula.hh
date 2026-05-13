@@ -10,6 +10,8 @@
 #include "LogicFormula.hh"
 #include "Operators.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief The class represent all the Boolean binary operations.
@@ -36,7 +38,7 @@ namespace chase {
         LogicFormula *getOp1() const;
 
         /// @brief Setter of the first operand.
-        /// @param op1 The first operand to be set.
+        /// @param op1 The first operand to be set. Ownership is transferred.
         void setOp1(LogicFormula *op1);
 
         /// @brief Getter of the second operand.
@@ -44,7 +46,7 @@ namespace chase {
         LogicFormula *getOp2() const;
 
         /// @brief Setter of the second operand.
-        /// @param op2 The second operand to be set.
+        /// @param op2 The second operand to be set. Ownership is transferred.
         void setOp2(LogicFormula *op2);
 
         /// @brief Base function for the visitor pattern.
@@ -60,14 +62,22 @@ namespace chase {
         /// @return A clone of the object.
         BinaryBooleanFormula * clone() override;
 
+        /// @brief Release ownership of the first operand.
+        /// @return The first operand as an owning pointer.
+        std::unique_ptr<LogicFormula> releaseOp1();
+
+        /// @brief Release ownership of the second operand.
+        /// @return The second operand as an owning pointer.
+        std::unique_ptr<LogicFormula> releaseOp2();
+
     protected:
 
         /// @brief The operator.
         BooleanOperator _op;
         /// @brief The first operand.
-        LogicFormula * _op1;
+        std::unique_ptr<LogicFormula> _op1;
         /// @brief The second operand.
-        LogicFormula * _op2;
+        std::unique_ptr<LogicFormula> _op2;
 
     };
 

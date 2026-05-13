@@ -3,11 +3,106 @@
 
 #include "chase-core.hh"
 
+#include <map>
+#include <string>
+#include <vector>
+
 namespace py = pybind11;
 using namespace chase;
 
 template <typename... Args>
 using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
+
+namespace {
+
+std::vector<Declaration *> declarationsView(Scope &scope) {
+    std::vector<Declaration *> ret;
+    ret.reserve(scope.declarations.size());
+    for(auto & declaration : scope.declarations)
+        ret.push_back(declaration.get());
+    return ret;
+}
+
+std::vector<Contract *> contractsView(System &system) {
+    std::vector<Contract *> ret;
+    auto & contracts = system.getContractsSet();
+    ret.reserve(contracts.size());
+    for(auto & contract : contracts)
+        ret.push_back(contract.get());
+    return ret;
+}
+
+std::vector<Component *> componentsView(System &system) {
+    std::vector<Component *> ret;
+    auto & components = system.getComponentsSet();
+    ret.reserve(components.size());
+    for(auto & component : components)
+        ret.push_back(component.get());
+    return ret;
+}
+
+std::map<std::string, Contract *> viewsView(ComponentDefinition &definition) {
+    std::map<std::string, Contract *> ret;
+    for(auto & view : definition.views)
+        ret.emplace(view.first, view.second.get());
+    return ret;
+}
+
+void setView(ComponentDefinition &definition, const std::string &name,
+             Contract *contract) {
+    auto it = definition.views.find(name);
+    if(contract == nullptr) {
+        if(it != definition.views.end()) definition.views.erase(it);
+        return;
+    }
+    if(it == definition.views.end())
+        definition.views.emplace(name, std::unique_ptr<Contract>(contract));
+    else
+        it->second.reset(contract);
+    contract->setParent(&definition);
+}
+
+std::vector<Component *> subcomponentsView(ComponentDefinition &definition) {
+    std::vector<Component *> ret;
+    ret.reserve(definition.subcomponents.size());
+    for(auto & component : definition.subcomponents)
+        ret.push_back(component.get());
+    return ret;
+}
+
+void addSubcomponent(ComponentDefinition &definition, Component *component) {
+    if(component == nullptr) return;
+    for(auto & owned : definition.subcomponents)
+        if(owned.get() == component) return;
+    definition.subcomponents.emplace(component);
+    component->setParent(&definition);
+}
+
+std::map<std::string, Value *> distributionParametersView(
+        Distribution &distribution) {
+    std::map<std::string, Value *> ret;
+    for(auto & parameter : distribution.parameters)
+        ret.emplace(parameter.first, parameter.second.get());
+    return ret;
+}
+
+std::vector<LogicFormula *> operandsView(LargeBooleanFormula &formula) {
+    std::vector<LogicFormula *> ret;
+    ret.reserve(formula.operands.size());
+    for(auto & operand : formula.operands)
+        ret.push_back(operand.get());
+    return ret;
+}
+
+std::map<semantic_domain, Specification *> specificationsView(
+        std::map<semantic_domain, std::unique_ptr<Specification>> &source) {
+    std::map<semantic_domain, Specification *> ret;
+    for(auto & item : source)
+        ret.emplace(item.first, item.second.get());
+    return ret;
+}
+
+} // namespace
 
 PYBIND11_MODULE(pychase, k) {
     k.doc() = "CHASE Core  Python wrapper module";
@@ -77,7 +172,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &ChaseObject::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &ChaseObject::getString)
-        .def("clone", &ChaseObject::clone)
+        .def("clone", &ChaseObject::clone, py::return_value_policy::reference)
         .def("IsA", &ChaseObject::IsA);
 
     py::class_<DesignProblem, std::unique_ptr<DesignProblem, py::nodelete>,
@@ -89,7 +184,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &DesignProblem::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &DesignProblem::getString)
-        .def("clone", &DesignProblem::clone);
+        .def("clone", &DesignProblem::clone, py::return_value_policy::reference);
 
     py::class_<Name, std::unique_ptr<Name, 
         py::nodelete>, ChaseObject>
@@ -101,7 +196,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &Name::getString)
         .def("changeName", &Name::changeName, 
             py::arg("name"))
-        .def("clone", &Name::clone);
+        .def("clone", &Name::clone, py::return_value_policy::reference);
 
     /**
     *  OPERATORS 
@@ -162,7 +257,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Type::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Type::getString)
-        .def("clone", &Type::clone);
+        .def("clone", &Type::clone, py::return_value_policy::reference);
 
     py::class_<SimpleType, Type, std::unique_ptr<SimpleType, 
         py::nodelete>>(m, "SimpleType");
@@ -174,7 +269,7 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("name")=std::string(""),
             py::arg("type")=nullptr)
         .def(py::init<Name*, Type *>(),
-            py::arg("name")=new Name(""),
+            py::arg("name")=nullptr,
             py::arg("type")=nullptr)
         .def("getType", &CustomType::getType)
         .def("setType", &CustomType::setType,
@@ -185,7 +280,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &CustomType::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &CustomType::getString)
-        .def("clone", &CustomType::clone);
+        .def("clone", &CustomType::clone, py::return_value_policy::reference);
 
     // Enumeration binding.
     py::class_<Enumeration, CustomType, 
@@ -203,7 +298,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Enumeration::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Enumeration::getString)
-        .def("clone", &Enumeration::clone);
+        .def("clone", &Enumeration::clone, py::return_value_policy::reference);
 
     // Boolean Type
     py::class_<Boolean, std::unique_ptr<Boolean, py::nodelete>, SimpleType>
@@ -212,7 +307,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Boolean::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Boolean::getString)
-        .def("clone", &Boolean::clone);
+        .def("clone", &Boolean::clone, py::return_value_policy::reference);
 
     // Integer Type
     py::class_<Integer, std::unique_ptr<Integer, 
@@ -227,7 +322,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Integer::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Integer::getString)
-        .def("clone", &Integer::clone);
+        .def("clone", &Integer::clone, py::return_value_policy::reference);
 
     // Real Type
     py::class_<Real, std::unique_ptr<Real, py::nodelete>,
@@ -240,7 +335,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Real::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Real::getString)
-        .def("clone", &Real::clone);
+        .def("clone", &Real::clone, py::return_value_policy::reference);
 
 
 
@@ -254,7 +349,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getType", &Value::getType)
         .def("setType", &Value::setType,
             py::arg("type").none(false))
-        .def("clone", &Value::clone);
+        .def("clone", &Value::clone, py::return_value_policy::reference);
 
     // NumericValue binding.
     py::class_<NumericValue, std::unique_ptr<NumericValue, 
@@ -272,7 +367,7 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("d"))
         .def("getString", &Identifier::getString)
         .def("getType", &Identifier::getType)
-        .def("clone", &Identifier::clone);
+        .def("clone", &Identifier::clone, py::return_value_policy::reference);
 
     // Expression Binding
     py::class_<Expression, std::unique_ptr<Expression, 
@@ -294,7 +389,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getType", &Expression::getType)
         .def("accept_visitor", &Expression::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &Expression::clone);
+        .def("clone", &Expression::clone, py::return_value_policy::reference);
 
 
     //  BooleanValue Binding
@@ -310,7 +405,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &BooleanValue::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &BooleanValue::getString)
-        .def("clone", &BooleanValue::clone);
+        .def("clone", &BooleanValue::clone, py::return_value_policy::reference);
 
     //  IntegerValue Binding
     py::class_<IntegerValue, std::unique_ptr<IntegerValue, 
@@ -325,7 +420,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &IntegerValue::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &IntegerValue::getString)
-        .def("clone", &IntegerValue::clone);
+        .def("clone", &IntegerValue::clone, py::return_value_policy::reference);
 
     //  RealValue Binding
     py::class_<RealValue, std::unique_ptr<RealValue, 
@@ -340,7 +435,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &RealValue::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &RealValue::getString)
-        .def("clone", &RealValue::clone);
+        .def("clone", &RealValue::clone, py::return_value_policy::reference);
 
     // Range Binding
     py::class_<Range, std::unique_ptr<Range,
@@ -360,7 +455,7 @@ PYBIND11_MODULE(pychase, k) {
     .def("getString", &Range::getString)
     .def("accept_visitor", &Range::accept_visitor,
          py::arg("v").none(false))
-     .def("clone", &Range::clone);
+     .def("clone", &Range::clone, py::return_value_policy::reference);
 
     // Interval Binding
     py::class_<Interval, std::unique_ptr<Interval,
@@ -380,7 +475,7 @@ PYBIND11_MODULE(pychase, k) {
     .def("getString", &Interval::getString)
     .def("accept_visitor", &Interval::accept_visitor,
          py::arg("v").none(false))
-    .def("clone", &Interval::clone);
+    .def("clone", &Interval::clone, py::return_value_policy::reference);
 
     // Matrix Binding.
     py::class_<Matrix, std::unique_ptr<Matrix, 
@@ -398,7 +493,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &Matrix::getString)
         .def("accept_visitor", &Matrix::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &Matrix::clone);
+        .def("clone", &Matrix::clone, py::return_value_policy::reference);
     
     // FunctionCall Binding.
     py::class_<FunctionCall, Value, std::unique_ptr<FunctionCall,
@@ -414,7 +509,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &FunctionCall::getString)
         .def("accept_visitor", &FunctionCall::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &FunctionCall::clone);
+        .def("clone", &FunctionCall::clone, py::return_value_policy::reference);
 
     // Probability Function.
     py::class_<ProbabilityFunction, Value, std::unique_ptr<
@@ -427,7 +522,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &ProbabilityFunction::getString)
         .def("accept_visitor", &ProbabilityFunction::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &ProbabilityFunction::clone);
+        .def("clone", &ProbabilityFunction::clone, py::return_value_policy::reference);
 
     /**
     *   DECLARATION BINDINGS
@@ -446,7 +541,7 @@ PYBIND11_MODULE(pychase, k) {
         Declaration>(m, "Scope")
         .def("addDeclaration", &Scope::addDeclaration,
             py::arg("declaration").none(false))
-        .def_readwrite("declarations", &Scope::declarations)
+        .def_property_readonly("declarations", &declarationsView)
         ;
 
     // Library binding.
@@ -460,12 +555,12 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Library::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Library::getString)
-        .def("clone", &Library::clone);
+        .def("clone", &Library::clone, py::return_value_policy::reference);
 
     // ComponentDefinition Binding
     py::class_<ComponentDefinition, std::unique_ptr<
         ComponentDefinition, py::nodelete>, 
-        Declaration>(m, "ComponentDefinition")
+        Scope>(m, "ComponentDefinition")
         .def(py::init<>())
         .def(py::init<Name *>(),
             py::arg("name").none(false))
@@ -474,9 +569,14 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &ComponentDefinition::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &ComponentDefinition::getString)
-        .def("clone", &ComponentDefinition::clone)
-        .def_readwrite("views", &ComponentDefinition::views)
-        .def_readwrite("subcomponents", &ComponentDefinition::subcomponents);
+        .def("clone", &ComponentDefinition::clone, py::return_value_policy::reference)
+        .def("setView", &setView,
+            py::arg("name").none(false),
+            py::arg("contract").none(true))
+        .def("addSubcomponent", &addSubcomponent,
+            py::arg("component").none(false))
+        .def_property_readonly("views", &viewsView)
+        .def_property_readonly("subcomponents", &subcomponentsView);
     
     // DataDeclaration Binding
     py::class_<DataDeclaration, std::unique_ptr<DataDeclaration, 
@@ -494,7 +594,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Parameter::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Parameter::getString)
-        .def("clone", &Parameter::clone);
+        .def("clone", &Parameter::clone, py::return_value_policy::reference);
 
     // Constant Binding
     py::class_<Constant, std::unique_ptr<Constant, 
@@ -509,7 +609,7 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("value").none(false))
         .def("accept_visitor", &Constant::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &Constant::clone);
+        .def("clone", &Constant::clone, py::return_value_policy::reference);
 
     // Causality Enum
     py::enum_<chase::causality_t>(m, "causality_t")
@@ -533,7 +633,7 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("causality").none(false))
         .def("accept_visitor", &Variable::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &Variable::clone);
+        .def("clone", &Variable::clone, py::return_value_policy::reference);
 
     // Distribution type enumeration binding.
     py::enum_<distribution_type>(m, "distribution_type", py::arithmetic())
@@ -545,7 +645,7 @@ PYBIND11_MODULE(pychase, k) {
     // Distribution Binding.
     py::class_<Distribution, std::unique_ptr<Distribution, 
         py::nodelete>, DataDeclaration>(m, "Distribution")
-        .def_readwrite("parameters", &Distribution::parameters)
+        .def_property_readonly("parameters", &distributionParametersView)
         .def(py::init<distribution_type &, Name * , Type *>(),
             py::arg("dtype").none(false),
             py::arg("name").none(true),
@@ -559,7 +659,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Distribution::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Distribution::getString)
-        .def("clone", &Distribution::clone);
+        .def("clone", &Distribution::clone, py::return_value_policy::reference);
 
     // Function Binding.
     py::class_<Function, std::unique_ptr<Function, py::nodelete>,
@@ -579,7 +679,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Function::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Function::getString)
-        .def("clone", &Function::clone);
+        .def("clone", &Function::clone, py::return_value_policy::reference);
         
     /**
     *  SPECIFICATIONS BINDINGS
@@ -610,7 +710,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Constraint::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Constraint::getString)
-        .def("clone", &Constraint::clone);
+        .def("clone", &Constraint::clone, py::return_value_policy::reference);
 
     // BinaryBooleanFormula
     py::class_<BinaryBooleanFormula, 
@@ -634,7 +734,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &BinaryBooleanFormula::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &BinaryBooleanFormula::getString)
-        .def("clone", &BinaryBooleanFormula::clone);
+        .def("clone", &BinaryBooleanFormula::clone, py::return_value_policy::reference);
     
     // BinaryTemporalFormula
     py::class_<BinaryTemporalFormula, 
@@ -658,7 +758,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &BinaryTemporalFormula::getString)
         .def("accept_visitor", &BinaryTemporalFormula::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &BinaryTemporalFormula::clone);
+        .def("clone", &BinaryTemporalFormula::clone, py::return_value_policy::reference);
     
     // Boolean Constant
     py::class_<BooleanConstant,
@@ -669,7 +769,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &BooleanConstant::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &BooleanConstant::getString)
-        .def("clone", &BooleanConstant::clone);
+        .def("clone", &BooleanConstant::clone, py::return_value_policy::reference);
     
     // LargeBooleanFormula
     py::class_<LargeBooleanFormula,
@@ -685,8 +785,13 @@ PYBIND11_MODULE(pychase, k) {
         .def("getString", &LargeBooleanFormula::getString)
         .def("accept_visitor", &LargeBooleanFormula::accept_visitor,
             py::arg("v").none(false))
-        .def("clone", &LargeBooleanFormula::clone)
-        .def_readwrite("operands", &LargeBooleanFormula::operands);
+        .def("clone", &LargeBooleanFormula::clone, py::return_value_policy::reference)
+        .def("getOperand", &LargeBooleanFormula::getOperand,
+            py::arg("index").none(false))
+        .def("setOperand", &LargeBooleanFormula::setOperand,
+            py::arg("index").none(false),
+            py::arg("formula").none(false))
+        .def_property_readonly("operands", &operandsView);
 
     // ModalFormula
     py::class_<ModalFormula,
@@ -703,7 +808,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("setFormula", &ModalFormula::setFormula,
             py::arg("formula").none(false))
         .def("getString", &ModalFormula::getString)
-        .def("clone", &ModalFormula::clone);
+        .def("clone", &ModalFormula::clone, py::return_value_policy::reference);
 
     // Proposition
     py::class_<Proposition, 
@@ -722,7 +827,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Proposition::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Proposition::getString)
-        .def("clone", &Proposition::clone);
+        .def("clone", &Proposition::clone, py::return_value_policy::reference);
 
     // UnaryBooleanFormula
     py::class_<UnaryBooleanFormula,
@@ -741,7 +846,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &UnaryBooleanFormula::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &UnaryBooleanFormula::getString)
-        .def("clone", &UnaryBooleanFormula::clone);
+        .def("clone", &UnaryBooleanFormula::clone, py::return_value_policy::reference);
 
     // UnaryTemporalFormula
     py::class_<UnaryTemporalFormula,
@@ -760,7 +865,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &UnaryTemporalFormula::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &UnaryTemporalFormula::getString)
-        .def("clone", &UnaryTemporalFormula::clone);
+        .def("clone", &UnaryTemporalFormula::clone, py::return_value_policy::reference);
 
 
 
@@ -783,7 +888,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &QuantifiedFormula::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &QuantifiedFormula::getString)
-        .def("clone", &QuantifiedFormula::clone);
+        .def("clone", &QuantifiedFormula::clone, py::return_value_policy::reference);
     
     /**
     * GRAPH BINDINGS
@@ -804,7 +909,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Edge::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Edge::getString)
-        .def("clone", &Edge::clone);
+        .def("clone", &Edge::clone, py::return_value_policy::reference);
 
     // WeightedEdge
     py::class_<WeightedEdge, 
@@ -820,7 +925,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("setWeight", &WeightedEdge::setWeight,
             py::arg("weight").none(false))
         .def("getString", &Edge::getString)
-        .def("clone", &Edge::clone);
+        .def("clone", &Edge::clone, py::return_value_policy::reference);
     
     // Vertex
     py::class_<Vertex, std::unique_ptr<Vertex, py::nodelete>,
@@ -833,7 +938,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Vertex::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Vertex::getString)
-        .def("clone", &Vertex::clone);
+        .def("clone", &Vertex::clone, py::return_value_policy::reference);
     
     // Graph
     py::class_<Graph, std::unique_ptr<Graph, py::nodelete>,
@@ -842,7 +947,7 @@ PYBIND11_MODULE(pychase, k) {
             bool &, Name *>(),
             py::arg("size").none(false), 
             py::arg("directed")=false,
-            py::arg("name")=new Name("GenericGraph"))
+            py::arg("name")=nullptr)
         .def("accept_visitor", &Graph::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Graph::getString)
@@ -866,7 +971,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("getGraphViz", &Graph::getGraphViz)
         .def("getAdjacentNodes", &Graph::getAdjacentNodes,
             py::arg("id").none(false))
-        .def("clone", &Graph::clone);
+        .def("clone", &Graph::clone, py::return_value_policy::reference);
 
     m.def("getSubGraph", &chase::getSubGraph,
         py::arg("graph"), py::arg("vertexes"));
@@ -888,16 +993,14 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("contract").none(false))
         .def("addComponent", &System::addComponent,
             py::arg("component").none(false))
-        .def("getDeclarationsSet", &System::getDeclarationsSet,
-            py::return_value_policy::reference)
-        .def("getContractsSet", &System::getContractsSet,
-            py::return_value_policy::reference)
-        .def("getComponentsSet", &System::getComponentsSet,
-            py::return_value_policy::reference)
+        .def("getDeclarationsSet",
+            [](System &system) { return declarationsView(system); })
+        .def("getContractsSet", &contractsView)
+        .def("getComponentsSet", &componentsView)
         .def("accept_visitor", &System::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &System::getString)
-        .def("clone", &System::clone)
+        .def("clone", &System::clone, py::return_value_policy::reference)
         .def("getName", &System::getName,
             py::return_value_policy::reference)
         .def("setName", &System::setName,
@@ -926,7 +1029,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Contract::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Contract::getString)
-        .def("clone", &Contract::clone)
+        .def("clone", &Contract::clone, py::return_value_policy::reference)
         .def_static("saturate", &Contract::saturate,
             py::arg("c").none(false))
         .def_static("composition", &Contract::composition,
@@ -956,9 +1059,15 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("declaration_map").none(false))
         .def_static("saturateLogic", &Contract::saturateLogic,
             py::arg("c").none(false))
-        .def_readwrite("declarations", &Contract::declarations)
-        .def_readwrite("assumptions", &Contract::assumptions)
-        .def_readwrite("guarantees", &Contract::guarantees);
+        .def_property_readonly("declarations", &declarationsView)
+        .def_property_readonly("assumptions",
+            [](Contract &contract) {
+                return specificationsView(contract.assumptions);
+            })
+        .def_property_readonly("guarantees",
+            [](Contract &contract) {
+                return specificationsView(contract.guarantees);
+            });
 
     /**
     * COMPONENT BINDINGS
@@ -984,7 +1093,7 @@ PYBIND11_MODULE(pychase, k) {
         .def("accept_visitor", &Component::accept_visitor,
             py::arg("v").none(false))
         .def("getString", &Component::getString)
-        .def("clone", &Component::clone);
+        .def("clone", &Component::clone, py::return_value_policy::reference);
 
     /**
     * CHASE TIME BINDING
@@ -1315,4 +1424,3 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("identifier").none(false));
     
 }
-

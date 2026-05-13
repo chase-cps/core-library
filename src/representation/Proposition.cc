@@ -19,9 +19,7 @@ Proposition::Proposition() :
 }
 
 Proposition::~Proposition()
-{
-    delete _type;
-}
+    = default;
 
 Proposition::Proposition(Value *v) :
     _type(new Boolean()),
@@ -35,7 +33,7 @@ Proposition::Proposition(Value *v) :
             Identifier *id;
             id = dynamic_cast< Identifier * >(v);
             if (id != nullptr) {
-                _name = new Name(id->getDeclaration()->getName()->getString());
+                _name.reset(new Name(id->getDeclaration()->getName()->getString()));
                 _name->setParent(this);
             }
             else messageError("Something went wrong in dynamic cast.");
@@ -57,29 +55,40 @@ Proposition::Proposition(Value *v) :
             messageError("Not boolean object when creating a proposition", v);
             break;
     }
+    if(_value != nullptr && _value->getParent() == nullptr) _value->setParent(this);
 
 }
 
 Type *Proposition::getType() {
-    return _type;
+    return _type.get();
 }
 
 Value *Proposition::getValue() {
-    return _value;
+    return _value.get();
 }
 
 void Proposition::setValue(Value *v) {
-    _value = v;
-    if(_value->getParent() == nullptr ) _value->setParent(this);
+    if(_value.get() == v) {
+        if(_value != nullptr && _value->getParent() == nullptr )
+            _value->setParent(this);
+        return;
+    }
+    _value.reset(v);
+    if(_value != nullptr && _value->getParent() == nullptr ) _value->setParent(this);
 }
 
 Name *Proposition::getName() {
-    return _name;
+    return _name.get();
 }
 
 void Proposition::setName(Name *n) {
-    _name = n;
-    if(_name->getParent() == nullptr ) _name->setParent(this);
+    if(_name.get() == n) {
+        if(_name != nullptr && _name->getParent() == nullptr )
+            _name->setParent(this);
+        return;
+    }
+    _name.reset(n);
+    if(_name != nullptr && _name->getParent() == nullptr ) _name->setParent(this);
 }
 
 int Proposition::accept_visitor(chase::BaseVisitor &v) {
@@ -91,7 +100,7 @@ std::string Proposition::getString() {
     if( _value->IsA() == identifier_node )
         ret = _name->getString();
     else if( _value->IsA() == expression_node )
-        ret = static_cast< Expression * >(_value)->getString();
+        ret = static_cast< Expression * >(_value.get())->getString();
     return ret;
 }
 

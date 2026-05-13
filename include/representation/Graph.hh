@@ -14,6 +14,7 @@
 #include "representation/Value.hh"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -75,7 +76,7 @@ namespace chase {
     {
     public:
         /// @brief Constructor.
-        Vertex(Name *name = new Name());
+        Vertex(Name *name = nullptr);
 
         /// @brief Destructor.
         ~Vertex() override;
@@ -107,7 +108,7 @@ namespace chase {
 
     protected:
         /// @brief Pointer to the name object of the vertex.
-        Name * _name;
+        std::unique_ptr<Name> _name;
     };
 
     /// @brief Base class for the weighted edges.
@@ -141,13 +142,13 @@ namespace chase {
         /// @brief Base function for the visit.
         /// @param v The visitor to be used.
         /// @return The return value of the used visitor.
-        int accept_visitor(chase::BaseVisitor &v);
+        int accept_visitor(chase::BaseVisitor &v) override;
 
 
 
     protected:
         /// @brief The weight of the edge, expressed as a Value object.
-        Value * _weight;
+        std::unique_ptr<Value> _weight;
     };
 
     /// @brief Adjacency Map defined as a map of map of edges. Nullptr edges
@@ -167,7 +168,7 @@ namespace chase {
 
         /// @brief Constructor.
         Graph( unsigned int size, bool directed = false,
-                Name * name = new Name("GenericGraph") );
+                Name * name = nullptr );
 
         /// @brief Destructor.
         ~Graph() override;
@@ -249,9 +250,9 @@ namespace chase {
         /// @brief Adjacency matrix of the graph.
         AdjMatrix _matrix;
         /// @brief Set of edges of the graph.
-        std::set< Edge * > _edges;
+        std::set< std::unique_ptr<Edge> > _edges;
         /// @brief Set of nodes in the graph.
-        std::vector< Vertex * > _vertexes;
+        std::vector< std::unique_ptr<Vertex> > _vertexes;
 
         /// @brief The number of vertexes in the graph.
         unsigned int _size;
@@ -259,7 +260,7 @@ namespace chase {
         bool _directed;
 
         /// @brief the name of the graph.
-        Name * _name;
+        std::unique_ptr<Name> _name;
 
     };
 

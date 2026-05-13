@@ -13,6 +13,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 
 
@@ -27,10 +28,10 @@ namespace chase {
     public:
 
         /// @brief List of assumptions.
-        std::map< semantic_domain, Specification * > assumptions;
+        std::map< semantic_domain, std::unique_ptr<Specification> > assumptions;
 
         /// @brief List of guarantees.
-        std::map< semantic_domain, Specification * > guarantees;
+        std::map< semantic_domain, std::unique_ptr<Specification> > guarantees;
 
         /// @brief Constructor.
         explicit Contract(std::string name = std::string("contract"));
@@ -185,17 +186,6 @@ namespace chase {
         /// specifications in contracts.
         /// @param c The contract to saturate. Saturation happens in loco.
         static void saturateLogic(Contract * c );
-
-    protected:
-
-        /// @brief Name of the contract. The default value will be "contract".
-        /// It will be useful to identify a contract within a system modeled
-        /// by multiple contracts.
-        Name * _name;
-
-
-
-
 
     };
 

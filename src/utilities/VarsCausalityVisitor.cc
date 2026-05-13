@@ -79,7 +79,7 @@ void VarsCausalityVisitor::_fixVarsCausality() {
     {
         if(dec->IsA() == variable_node)
         {
-            auto v = reinterpret_cast< Variable * >(dec);
+            auto v = reinterpret_cast< Variable * >(dec.get());
             if(v->getCausality() == input || v->getCausality() == output)
                 continue;
 
@@ -91,4 +91,3 @@ void VarsCausalityVisitor::_fixVarsCausality() {
         }
     }
 }
-

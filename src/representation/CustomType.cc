@@ -21,26 +21,40 @@ CustomType::CustomType(Name *name, Type *type) :
     _type(type)
 {
     _node_type = customType_node;
+    if(_name == nullptr) _name.reset(new Name(""));
+    if(_name != nullptr) _name->setParent(this);
+    if(_type != nullptr) _type->setParent(this);
 }
 
 Type *CustomType::getType() const {
-    return _type;
+    return _type.get();
 }
 
 void CustomType::setType(Type *type) {
-    _type = type;
+    if(_type.get() == type) {
+        if(_type != nullptr) _type->setParent(this);
+        return;
+    }
+    _type.reset(type);
+    if(_type != nullptr) _type->setParent(this);
 }
 
 Name *CustomType::getName() const {
-    return _name;
+    return _name.get();
 }
 
 void CustomType::setName(Name *name) {
-    _name = name;
+    if(_name.get() == name) {
+        if(_name != nullptr) _name->setParent(this);
+        return;
+    }
+    _name.reset(name);
+    if(_name != nullptr) _name->setParent(this);
 }
 
 std::string CustomType::getString() {
-    std::string ret("CUSTOM TYPE: " + _name->getString());
+    std::string ret("CUSTOM TYPE: ");
+    if(_name != nullptr) ret += _name->getString();
     return ret;
 }
 
@@ -49,7 +63,9 @@ int CustomType::accept_visitor(BaseVisitor &v) {
 }
 
 Type *CustomType::clone() {
-    return new CustomType(_name->clone(), _type->clone());
+    return new CustomType(
+            _name != nullptr ? _name->clone() : nullptr,
+            _type != nullptr ? _type->clone() : nullptr);
 }
 
 CustomType::~CustomType() = default;

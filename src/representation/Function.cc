@@ -11,7 +11,9 @@ using namespace chase;
 
 Function::Function(Type * type, Name * name, unsigned int arity) :
     DataDeclaration(type, name),
-    _arity(arity)
+    parameters(arity),
+    _arity(arity),
+    _domain(arity)
 {
 }
 
@@ -28,10 +30,10 @@ std::string Function::getString() {
 
 Function *Function::clone() {
     auto ret = new Function(_type->clone(), _name->clone(), _arity);
-    for(size_t it = 0; it < parameters.size(); ++it)
-        ret->parameters[it] = parameters[it];
+    ret->parameters = parameters;
     for(size_t it = 0; it < _domain.size(); ++it)
-        ret->setDomainOfParameter(it, _domain[it]->clone());
+        if(_domain[it] != nullptr)
+            ret->setDomainOfParameter(it, _domain[it]->clone());
     return ret;
 }
 
@@ -44,8 +46,8 @@ void Function::setArity(unsigned int arity) {
 }
 
 Type *Function::getDomainOfParameter(unsigned int position) {
-    if(position <= _arity)
-        return _domain[position - 1];
+    if(position < _arity)
+        return _domain[position].get();
     else{
         messageWarning(std::string("Position requested: ")
             + std::to_string(position) +
@@ -55,10 +57,13 @@ Type *Function::getDomainOfParameter(unsigned int position) {
 }
 
 void Function::setDomainOfParameter(unsigned int position, Type *type) {
-    if(position > _arity)
+    if(position >= _arity)
         messageWarning(std::string("Position requested: ")
                        + std::to_string(position) +
                        "\tArity: " + std::to_string(_arity));
     else
-        _domain[position] = type;
+    {
+        _domain[position].reset(type);
+        if(type != nullptr) type->setParent(this);
+    }
 }

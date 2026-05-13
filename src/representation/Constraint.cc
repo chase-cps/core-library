@@ -15,9 +15,7 @@ Constraint::Constraint() :
     _node_type = constraint_node;
 }
 
-Constraint::~Constraint() {
-    delete(_expression);
-}
+Constraint::~Constraint() = default;
 
 int Constraint::accept_visitor(BaseVisitor &v) {
     return v.visitConstraint(*this);
@@ -25,21 +23,32 @@ int Constraint::accept_visitor(BaseVisitor &v) {
 
 std::string Constraint::getString()
 {
-    std::string ret(_expression->getString());
+    std::string ret(_expression != nullptr ? _expression->getString() : "");
     return ret;
 }
 
 Constraint *Constraint::clone() {
     auto ret = new Constraint();
-    ret->setExpression(_expression);
+    ret->setExpression(_expression != nullptr ? _expression->clone() : nullptr);
     return ret;
 }
 
 Expression *Constraint::getExpression() const {
-    return _expression;
+    return _expression.get();
 }
 
 void Constraint::setExpression(Expression *expression) {
-    _expression = expression;
-    _expression->setParent(this);
+    if(_expression.get() == expression) {
+        if(_expression != nullptr) _expression->setParent(this);
+        return;
+    }
+    _expression.reset(expression);
+    if(_expression != nullptr) _expression->setParent(this);
+}
+
+std::unique_ptr<Expression> Constraint::releaseExpression()
+{
+    auto ret = std::move(_expression);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
 }

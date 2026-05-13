@@ -15,7 +15,7 @@ StringValue::StringValue( std::string value ) :
     _value(value)
 {
     _node_type = stringValue_node;
-    _type = new String();
+    setType(new String());
 }
 
 std::string StringValue::getValue() {

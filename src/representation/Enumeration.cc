@@ -32,7 +32,8 @@ void Enumeration::addItem(std::string item) {
         int pos = _values.size();
         auto v = new Constant(
                 new Integer(), new Name(item), IntVal(pos));
-        _values.push_back(v);
+        v->setParent(this);
+        _values.emplace_back(v);
     }
     else
         messageError(
@@ -44,7 +45,7 @@ Constant * Enumeration::getItemInPosition(size_t position) {
     if(position >= _values.size())
         return nullptr;
     else
-        return _values[position];
+        return _values[position].get();
 }
 
 int Enumeration::getPositionByName(std::string name)
@@ -74,7 +75,12 @@ int Enumeration::accept_visitor(BaseVisitor &v) {
 
 Enumeration *Enumeration::clone()
 {
-    return new Enumeration(_name->clone());
+    auto ret = new Enumeration(_name->clone());
+    for(auto & value : _values)
+    {
+        auto cloned = value->clone();
+        cloned->setParent(ret);
+        ret->_values.emplace_back(cloned);
+    }
+    return ret;
 }
-
-

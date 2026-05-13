@@ -10,6 +10,8 @@
 #include "representation/Interval.hh"
 #include "representation/Operators.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Class representing a Unary Temporal Formula.
@@ -66,17 +68,20 @@ namespace chase {
         /// @return The cloned object.
         UnaryTemporalFormula * clone() override;
 
+        std::unique_ptr<LogicFormula> releaseFormula();
+        std::unique_ptr<Interval> releaseInterval();
+
     protected:
 
         /// @brief The temporal operator.
         TemporalOperator _op;
 
         /// @brief The formula to which apply the operator.
-        LogicFormula * _formula;
+        std::unique_ptr<LogicFormula> _formula;
 
         /// @brief Interval in which the temporal operator holds.
         /// Notice: nullptr is to be interpreted as a [0, +Inf) interval.
-        Interval * _interval;
+        std::unique_ptr<Interval> _interval;
 
     };
 

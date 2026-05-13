@@ -18,10 +18,7 @@ ComponentDefinition::ComponentDefinition() :
     _node_type = componentDefinition_node;
 }
 
-ComponentDefinition::~ComponentDefinition()
-{
-    delete _name;
-}
+ComponentDefinition::~ComponentDefinition() = default;
 
 ComponentDefinition::ComponentDefinition(Name *name) :
     Scope(name)
@@ -57,15 +54,18 @@ ComponentDefinition * ComponentDefinition::clone()
     for( auto i = views.begin(); i != views.end(); ++i )
     {
         std::string view_name = i->first;
-        Contract * view = i->second;
+        Contract * view = i->second.get();
 
-        std::pair< std::string, Contract * > p(view_name, view->clone());
-        ret->views.insert(p);
+        auto cloned = view->clone();
+        cloned->setParent(ret);
+        ret->views.emplace(view_name, std::unique_ptr<Contract>(cloned));
     }
 
     for( const auto & i : subcomponents )
     {
-        ret->subcomponents.insert(i->clone());
+        auto cloned = i->clone();
+        cloned->setParent(ret);
+        ret->subcomponents.emplace(cloned);
     }
 
     return ret;

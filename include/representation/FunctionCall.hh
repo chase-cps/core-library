@@ -8,6 +8,7 @@
 #pragma once
 
 #include "representation/Value.hh"
+#include <memory>
 #include <vector>
 
 namespace chase {
@@ -59,7 +60,7 @@ namespace chase {
         /// @brief Pointer to the declaration of the function.
         Function * _function;
         /// @brief vector of parameters.
-        std::vector< Value * > _parameters;
+        std::vector< std::unique_ptr<Value> > _parameters;
 
 
     };

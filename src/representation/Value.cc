@@ -23,12 +23,15 @@ Value::~Value()
 }
 
 Type *Value::getType() {
-    return _type;
+    return _type.get();
 }
 
 void Value::setType(Type *type) {
-    _type = type;
-    _type->setParent( this );
+    if(_type.get() == type) {
+        if(_type != nullptr) _type->setParent(this);
+        return;
+    }
+    _type.reset(type);
+    if(_type != nullptr) _type->setParent( this );
 }
-
 

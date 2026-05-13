@@ -9,6 +9,7 @@
 
 #include "representation/Value.hh"
 #include "representation/Expression.hh"
+#include <memory>
 
 namespace chase {
 
@@ -20,7 +21,7 @@ namespace chase {
     public:
 
         /// @brief
-        std::vector< Value * > elements;
+        std::vector< std::unique_ptr<Value> > elements;
 
         /// @brief Constructor.
         Relation();

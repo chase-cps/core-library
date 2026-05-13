@@ -13,6 +13,8 @@
 #include "representation/Declaration.hh"
 #include "representation/Type.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Abstract class for all the object representing the declaration
@@ -41,8 +43,7 @@ namespace chase {
         protected:
 
             /// @brief The type of the object represented by the declaration.
-            Type * _type;
+            std::unique_ptr<Type> _type;
 
     };
 }
-

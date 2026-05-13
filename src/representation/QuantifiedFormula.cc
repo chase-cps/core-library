@@ -18,14 +18,12 @@ QuantifiedFormula::QuantifiedFormula(
     _formula(formula)
 {
     _node_type = quantifiedFormula_node;
-    _variable->setParent(this);
-    _formula->setParent(this);
+    if(_variable == nullptr) _variable.reset(new Variable());
+    if(_variable != nullptr) _variable->setParent(this);
+    if(_formula != nullptr) _formula->setParent(this);
 }
 
-QuantifiedFormula::~QuantifiedFormula() {
-    delete(_variable);
-    delete(_formula);
-}
+QuantifiedFormula::~QuantifiedFormula() = default;
 
 int QuantifiedFormula::accept_visitor(BaseVisitor &v) {
     return v.visitQuantifiedFormula(*this);
@@ -37,7 +35,10 @@ std::string QuantifiedFormula::getString() {
 }
 
 QuantifiedFormula *QuantifiedFormula::clone() {
-    auto ret = new QuantifiedFormula();
+    auto ret = new QuantifiedFormula(
+            _quantifier,
+            _variable != nullptr ? _variable->clone() : nullptr,
+            _formula != nullptr ? _formula->clone() : nullptr);
     return ret;
 }
 
@@ -50,21 +51,43 @@ void QuantifiedFormula::setQuantifier(logic_quantifier quantifier) {
 }
 
 Variable *QuantifiedFormula::getVariable() const {
-    return _variable;
+    return _variable.get();
 }
 
 void QuantifiedFormula::setVariable(Variable *variable) {
-    _variable = variable;
-    _variable->setParent(this);
+    if(_variable.get() == variable) {
+        if(_variable != nullptr) _variable->setParent(this);
+        return;
+    }
+    _variable.reset(variable);
+    if(_variable != nullptr) _variable->setParent(this);
 }
 
 LogicFormula *QuantifiedFormula::getFormula() const {
-    return _formula;
+    return _formula.get();
 }
 
 void QuantifiedFormula::setFormula(LogicFormula *formula) {
-    _formula = formula;
-    _formula->setParent(this);
+    if(_formula.get() == formula) {
+        if(_formula != nullptr) _formula->setParent(this);
+        return;
+    }
+    _formula.reset(formula);
+    if(_formula != nullptr) _formula->setParent(this);
+}
+
+std::unique_ptr<Variable> QuantifiedFormula::releaseVariable()
+{
+    auto ret = std::move(_variable);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}
+
+std::unique_ptr<LogicFormula> QuantifiedFormula::releaseFormula()
+{
+    auto ret = std::move(_formula);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
 }
 
 

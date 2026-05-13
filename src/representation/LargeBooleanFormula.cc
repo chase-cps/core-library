@@ -112,7 +112,7 @@ LargeBooleanFormula *LargeBooleanFormula::clone()
 {
     auto ret = new LargeBooleanFormula( _op );
     for(auto & operand : operands) {
-        ret->addOperand(operand->clone());
+        ret->addOperand(operand != nullptr ? operand->clone() : nullptr);
     }
 
     return ret;
@@ -120,6 +120,30 @@ LargeBooleanFormula *LargeBooleanFormula::clone()
 
 void LargeBooleanFormula::addOperand(LogicFormula *f)
 {
-    operands.push_back(f);
-    f->setParent(this);
+    operands.emplace_back(f);
+    if(f != nullptr) f->setParent(this);
+}
+
+LogicFormula *LargeBooleanFormula::getOperand(size_t index) const
+{
+    return index < operands.size() ? operands[index].get() : nullptr;
+}
+
+void LargeBooleanFormula::setOperand(size_t index, LogicFormula *f)
+{
+    if(index >= operands.size()) return;
+    if(operands[index].get() == f) {
+        if(operands[index] != nullptr) operands[index]->setParent(this);
+        return;
+    }
+    operands[index].reset(f);
+    if(operands[index] != nullptr) operands[index]->setParent(this);
+}
+
+std::unique_ptr<LogicFormula> LargeBooleanFormula::releaseOperand(size_t index)
+{
+    if(index >= operands.size()) return nullptr;
+    auto ret = std::move(operands[index]);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
 }

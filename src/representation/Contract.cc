@@ -12,7 +12,7 @@
 using namespace chase;
 
 Contract::Contract( std::string name ) :
-    _name(new Name(name))
+    Scope(std::move(name))
 {
     _node_type = contract_node;
 }
@@ -28,21 +28,21 @@ std::string Contract::getString() {
     ret += _name->getString();
     ret += "\nDeclarations:\n";
 
-    for(auto d : declarations)
+    for(const auto & d : declarations)
     {
         ret += d->getString();
         ret += "\n";
     }
 
     ret += "Assumptions:\n";
-    for(auto sit: assumptions)
+    for(const auto & sit: assumptions)
     {
         ret += sit.second->getString();
         ret += "\n";
     }
 
     ret += "Guarantees:\n";
-    for(auto sit: guarantees)
+    for(const auto & sit: guarantees)
     {
         ret += sit.second->getString();
         ret += "\n";
@@ -53,26 +53,32 @@ std::string Contract::getString() {
 }
 
 Name * Contract::getName() const {
-    return _name;
+    return _name.get();
 }
 
 void Contract::setName(Name * name)
 {
-    _name = name;
+    Declaration::setName(name);
 }
 
 void Contract::addAssumptions(semantic_domain domain, Specification *spec)
 {
-    std::pair< semantic_domain, Specification * > a(domain, spec);
-    assumptions.insert(a);
-    spec->setParent(this);
+    auto it = assumptions.find(domain);
+    if(it == assumptions.end())
+        assumptions.emplace(domain, std::unique_ptr<Specification>(spec));
+    else
+        it->second.reset(spec);
+    if(spec != nullptr) spec->setParent(this);
 }
 
 void Contract::addGuarantees(semantic_domain domain, Specification *spec)
 {
-    std::pair< semantic_domain, Specification * > g(domain, spec);
-    guarantees.insert(g);
-    spec->setParent(this);
+    auto it = guarantees.find(domain);
+    if(it == guarantees.end())
+        guarantees.emplace(domain, std::unique_ptr<Specification>(spec));
+    else
+        it->second.reset(spec);
+    if(spec != nullptr) spec->setParent(this);
 }
 
 
@@ -85,10 +91,10 @@ Contract *Contract::clone() {
     std::map< Declaration *, Declaration * > declaration_map;
 
     // Declarations.
-    for(auto it : declarations )
+    for(auto & it : declarations )
     {
         auto dec = it->clone();
-        std::pair< Declaration *, Declaration * > p(it, dec);
+        std::pair< Declaration *, Declaration * > p(it.get(), dec);
         ret->addDeclaration(dec);
         declaration_map.insert(p);
     }
@@ -112,8 +118,6 @@ Contract *Contract::clone() {
 
     return ret;
 }
-
-
 
 
 

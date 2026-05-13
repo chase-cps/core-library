@@ -107,7 +107,11 @@ chase::GuideVisitor::visitUnaryBooleanOperation(chase::UnaryBooleanFormula &o)
 int
 chase::GuideVisitor::visitLargeBooleanFormula(chase::LargeBooleanFormula &o)
 {
-    return visitVector(o.operands);
+    int rv = _rv;
+    for(auto &operand : o.operands) {
+        if(operand != nullptr) rv |= continueVisit(operand.get());
+    }
+    return rv;
 }
 
 int chase::GuideVisitor::visitModalFormula(chase::ModalFormula &o)
@@ -138,16 +142,19 @@ int chase::GuideVisitor::visitContract(chase::Contract &o)
 {
     int rv = visitName(*o.getName());
 
-    rv |= visitList(o.declarations);
+    for(auto & declaration : o.declarations)
+    {
+        rv |= continueVisit(declaration.get());
+    }
 
     for (auto & assumption : o.assumptions)
     {
-        rv |= continueVisit(assumption.second);
+        rv |= continueVisit(assumption.second.get());
     }
 
     for (auto & guarantee : o.guarantees)
     {
-        rv |= continueVisit(guarantee.second);
+        rv |= continueVisit(guarantee.second.get());
     }
 
     return rv;
@@ -317,18 +324,18 @@ int chase::GuideVisitor::continueVisit(chase::ChaseObject *o)
 int chase::GuideVisitor::visitSystem(chase::System &o)
 {
     int rv = 0;
-    auto declarations = o.getDeclarationsSet();
+    auto & declarations = o.getDeclarationsSet();
     for(auto & declaration : declarations)
     {
         rv |= declaration->accept_visitor(*this);
     }
-    auto contracts = o.getContractsSet();
-    for(auto contract : contracts)
+    auto & contracts = o.getContractsSet();
+    for(auto & contract : contracts)
     {
         rv |= contract->accept_visitor(*this);
     }
-    auto components = o.getComponentsSet();
-    for(auto component : components)
+    auto & components = o.getComponentsSet();
+    for(auto & component : components)
     {
         rv |= component->accept_visitor(*this);
     }
@@ -341,7 +348,7 @@ int chase::GuideVisitor::visitComponentDefinition(
     int rv = visitName( * o.getName());
     for(auto & i : o.views)
     {
-        Contract * view = i.second;
+        Contract * view = i.second.get();
         rv |= view->accept_visitor(*this);
     }
     return rv;
@@ -364,10 +371,10 @@ int chase::GuideVisitor::visitComponent(chase::Component &o)
     {
         std::string v = i->first;
 
-        auto m = o.getParametersInView(v);
+        auto & m = o.getParametersInView(v);
         for(auto & j : m)
         {
-            rv |= j.second->accept_visitor(*this);
+            if(j.second != nullptr) rv |= j.second->accept_visitor(*this);
         }
     }
     return rv;
@@ -401,18 +408,19 @@ int chase::GuideVisitor::visitMatrix(chase::Matrix &matrix) {
     int rv = 0;
     for(size_t i = 1; i <= matrix.getRows(); ++i)
         for(size_t j = 1; j <= matrix.getColumns(); ++j)
-            rv |= matrix.at(i,j)->accept_visitor(*this);
+            if(matrix.at(i,j) != nullptr)
+                rv |= matrix.at(i,j)->accept_visitor(*this);
     return rv;
 }
 
 int chase::GuideVisitor::visitDistribution(chase::Distribution &distribution) {
     int rv = distribution.getName()->accept_visitor(*this);
     rv |= distribution.getType()->accept_visitor(*this);
-    for(auto it: distribution.parameters)
+    for(auto & it: distribution.parameters)
     {
         it.second->accept_visitor(*this);
     }
-    return 0;
+    return rv;
 }
 
 int chase::GuideVisitor::visitQuantifiedFormula(
@@ -455,7 +463,7 @@ int chase::GuideVisitor::visitConstraint(chase::Constraint &constraint) {
 
 int chase::GuideVisitor::visitLibrary(chase::Library &library) {
     int rv = 0;
-    for(auto i : library.declarations)
+    for(auto & i : library.declarations)
         rv |= i->accept_visitor(*this);
     return rv;
 }
@@ -465,10 +473,5 @@ int chase::GuideVisitor::visitWeightedEdge(chase::WeightedEdge &edge) {
     rv |= edge.getWeight()->accept_visitor(*this);
     return rv;
 }
-
-
-
-
-
 
 

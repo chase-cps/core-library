@@ -11,6 +11,9 @@
 #include "Contract.hh"
 #include "Scope.hh"
 
+#include <memory>
+#include <set>
+
 namespace chase {
 
 /// @brief Class representing a System composed by multiple contracts.
@@ -41,19 +44,19 @@ public:
   /// only to access the declaration set for reading it. Use the
   /// safe method addDeclaration for add a new declaration.
   /// @return a reference to the set of declarations.
-  std::list<Declaration *> &getDeclarationsSet();
+  std::list<std::unique_ptr<Declaration>> &getDeclarationsSet();
 
   /// @brief Method to access the contracts set. It should be used
   /// only to access the contracts set for reading it. Use the
   /// safe method addContract. for add a new contract.
   /// @return a reference to the set of contracts.
-  std::set<Contract *> &getContractsSet();
+  std::set<std::unique_ptr<Contract>> &getContractsSet();
 
   /// @brief Method to access the set of component instances composing
   /// the system. It should be used only to access the components set for
   /// reading it. Use the safe addComponent method for add new components.
   /// @return a reference to the set of components.
-  std::set<Component *> &getComponentsSet();
+  std::set<std::unique_ptr<Component>> &getComponentsSet();
 
   /// @brief Base function for the visitor pattern.
   /// @param v The visitor to be applied during the visit.
@@ -70,9 +73,9 @@ public:
 
 protected:
   /// Set of contracts describing the system's requirements.
-  std::set<Contract *> _contracts;
+  std::set<std::unique_ptr<Contract>> _contracts;
   /// Set of components of the system.
-  std::set<Component *> _components;
+  std::set<std::unique_ptr<Component>> _components;
 };
 
 } // namespace chase

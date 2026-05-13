@@ -13,6 +13,8 @@
 #include "ChaseObject.hh"
 #include "representation/Name.hh"
 
+#include <memory>
+
 namespace chase {
 /// @brief Base abstract class for all the declarations.
 class Declaration : public ChaseObject {
@@ -45,6 +47,6 @@ public:
 
 protected:
   /// @brief Name of the declaration.
-  Name *_name;
+  std::unique_ptr<Name> _name;
 };
 } // namespace chase

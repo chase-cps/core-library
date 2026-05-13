@@ -23,10 +23,7 @@ IntegerValue::IntegerValue( int64_t value ) :
     setType(new Integer());
 }
 
-IntegerValue::~IntegerValue()
-{
-    delete _type;
-}
+IntegerValue::~IntegerValue() = default;
 
 IntegerValue::IntegerValue( const IntegerValue & o ) :
     NumericValue(),
@@ -66,4 +63,3 @@ IntegerValue * IntegerValue::clone() {
     ret->setType(_type->clone());
     return ret;
 }
-

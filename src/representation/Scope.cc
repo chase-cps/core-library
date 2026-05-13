@@ -10,7 +10,10 @@
 using namespace chase;
 
 void Scope::addDeclaration(Declaration *declaration) {
-    declarations.push_back(declaration);
+    if(declaration == nullptr) return;
+    for(auto & owned : declarations)
+        if(owned.get() == declaration) return;
+    declarations.emplace_back(declaration);
     declaration->setParent(this);
 }
 

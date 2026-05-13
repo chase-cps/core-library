@@ -16,9 +16,9 @@ TEST(SystemTest, AddContract) {
   auto c = new Contract("TestContract");
   s.addContract(c);
 
-  auto contracts = s.getContractsSet();
+  auto & contracts = s.getContractsSet();
   EXPECT_EQ(contracts.size(), 1);
-  EXPECT_EQ(*contracts.begin(), c);
+  EXPECT_EQ(contracts.begin()->get(), c);
 }
 
 TEST(SystemTest, AddComponent) {
@@ -27,7 +27,7 @@ TEST(SystemTest, AddComponent) {
   auto c = new Component(comp, "TestComp");
   s.addComponent(c);
 
-  auto components = s.getComponentsSet();
+  auto & components = s.getComponentsSet();
   EXPECT_EQ(components.size(), 1);
-  EXPECT_EQ(*components.begin(), c);
+  EXPECT_EQ(components.begin()->get(), c);
 }

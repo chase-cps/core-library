@@ -13,6 +13,8 @@
 #include "representation/ChaseObject.hh"
 #include "representation/Type.hh"
 
+#include <memory>
+
 namespace chase {
     
     /// @brief Abstract class for all values.
@@ -39,7 +41,6 @@ namespace chase {
 
         protected:
             /// @brief Type of the value.
-            Type * _type;
+            std::unique_ptr<Type> _type;
     };
 }
-

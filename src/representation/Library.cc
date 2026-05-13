@@ -23,9 +23,7 @@ Library::Library(const std::string &name) :
 
 Library::Library(Name *n) : Scope(n) {_node_type = library_node;}
 
-Library::~Library() {
-    declarations.clear();
-}
+Library::~Library() = default;
 
 int Library::accept_visitor(BaseVisitor &v) {
     return v.visitLibrary(*this);
@@ -39,8 +37,8 @@ std::string Library::getString() {
 
 Library *Library::clone() {
     auto ret = new Library();
-    for(auto it : declarations)
-        ret->declarations.push_back(it->clone());
+    for(auto & it : declarations)
+        ret->addDeclaration(it->clone());
     return ret;
 }
 

@@ -10,6 +10,7 @@
 
 #include "representation/CustomType.hh"
 #include "representation/Constant.hh"
+#include <memory>
 
 namespace chase {
 
@@ -54,7 +55,7 @@ namespace chase {
     protected:
 
         /// @brief Vector of values.
-        std::vector< chase::Constant * > _values;
+        std::vector< std::unique_ptr<chase::Constant> > _values;
 
     };
 

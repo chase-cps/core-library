@@ -16,21 +16,20 @@ Vertex::Vertex(Name *name) :
     _node_type = graphVertex_node;
     if( _name == nullptr )
     {
-        _name = new Name("GenericVertex");
+        _name.reset(new Name("GenericVertex"));
     }
+    _name->setParent(this);
 }
 
-Vertex::~Vertex()
-{
-    delete _name;
-}
+Vertex::~Vertex() = default;
 
 Name *Vertex::getName() const {
-    return _name;
+    return _name.get();
 }
 
 void Vertex::setName(std::string name) {
-    _name = new Name(std::move(name));
+    _name.reset(new Name(std::move(name)));
+    _name->setParent(this);
 }
 
 int Vertex::accept_visitor(chase::BaseVisitor &v) {

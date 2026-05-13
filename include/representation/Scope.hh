@@ -9,6 +9,7 @@
 
 #include "representation/Declaration.hh"
 #include <list>
+#include <memory>
 
 namespace chase {
 
@@ -19,7 +20,7 @@ namespace chase {
     class Scope : public Declaration {
     public:
         /// @brief List of declarations.
-        std::list< Declaration * > declarations;
+        std::list< std::unique_ptr<Declaration> > declarations;
 
         virtual /// @brief Function to safely add a declaration to the contract.
         /// The function takes care of managing the parent link to the contract.

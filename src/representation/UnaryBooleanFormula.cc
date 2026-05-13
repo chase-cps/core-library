@@ -15,7 +15,7 @@ chase::UnaryBooleanFormula::UnaryBooleanFormula(
         _op1(op1)
 {
     _node_type = unaryBooleanOperation_node;
-    _op1->setParent(this);
+    if(_op1 != nullptr) _op1->setParent(this);
 }
 
 BooleanOperator UnaryBooleanFormula::getOp() const {
@@ -27,12 +27,16 @@ void UnaryBooleanFormula::setOp(BooleanOperator op) {
 }
 
 LogicFormula *UnaryBooleanFormula::getOp1() const {
-    return _op1;
+    return _op1.get();
 }
 
 void UnaryBooleanFormula::setOp1(LogicFormula *op1) {
-    _op1 = op1;
-    _op1->setParent(this);
+    if(_op1.get() == op1) {
+        if(_op1 != nullptr) _op1->setParent(this);
+        return;
+    }
+    _op1.reset(op1);
+    if(_op1 != nullptr) _op1->setParent(this);
 }
 
 int UnaryBooleanFormula::accept_visitor(chase::BaseVisitor &v) {
@@ -50,7 +54,15 @@ std::string UnaryBooleanFormula::getString() {
 
 UnaryBooleanFormula * UnaryBooleanFormula::clone()
 {
-    return new UnaryBooleanFormula(_op, _op1->clone());
+    return new UnaryBooleanFormula(
+            _op, _op1 != nullptr ? _op1->clone() : nullptr);
 }
 
 UnaryBooleanFormula::~UnaryBooleanFormula() = default;
+
+std::unique_ptr<LogicFormula> UnaryBooleanFormula::releaseOp1()
+{
+    auto ret = std::move(_op1);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}

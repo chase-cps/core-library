@@ -20,10 +20,7 @@ BooleanValue::BooleanValue( bool value ) :
     setType(new Boolean());
 }
 
-BooleanValue::~BooleanValue()
-{
-    delete _type;
-}
+BooleanValue::~BooleanValue() = default;
 
 BooleanValue::BooleanValue( const BooleanValue & o ) :
     NumericValue(),

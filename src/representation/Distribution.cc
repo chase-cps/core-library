@@ -12,17 +12,14 @@ using namespace chase;
 
 Distribution::Distribution(
         distribution_type dtype, Name * name, Type * type) :
-        DataDeclaration(type, name),
+        DataDeclaration(type != nullptr ? type : reinterpret_cast<Type*>(new Real()),
+                        name != nullptr ? name : new Name("anonymous_distribution")),
         _distribution_type(dtype)
 {
     _node_type = distribution_node;
 }
 
-Distribution::~Distribution() {
-    delete(_name);
-    delete(_type);
-    parameters.clear();
-}
+Distribution::~Distribution() = default;
 
 distribution_type Distribution::getDistributionType() const {
     return _distribution_type;
@@ -35,13 +32,17 @@ void Distribution::setDistributionType(distribution_type distributionType) {
 Value * Distribution::parameter(std::string name, chase::Value * value)
 {
     if(value != nullptr) {
-        std::pair< std::string, Value * > p(name, value);
-        parameters.insert(p);
+        auto it = parameters.find(name);
+        if(it == parameters.end())
+            parameters.emplace(name, std::unique_ptr<Value>(value));
+        else
+            it->second.reset(value);
+        value->setParent(this);
         return value;
     } else {
         auto it = parameters.find(name);
         if(it != parameters.end()){
-            return it->second;
+            return it->second.get();
         } else {
             return nullptr;
         }
@@ -58,7 +59,7 @@ std::string Distribution::getString()
     ret += _name->getString() + std::string(" is \n");
 
     ret += "\t" + distribution_type_names[_distribution_type];
-    for(auto it: parameters)
+    for(auto & it: parameters)
         ret += "\t" + it.first + " = " + it.second->getString();
     ret += "\t),\n";
     ret += "\t" + _type->getString() + "\n";
@@ -68,10 +69,8 @@ std::string Distribution::getString()
 Distribution * Distribution::clone() {
     auto distribution = new Distribution(
             _distribution_type, _name->clone(), _type->clone());
-    for(auto it :   parameters)
-        distribution->parameters.insert(
-                std::pair<std::string, chase::Value*>(
-                        it.first, it.second->clone()));
+    for(auto & it : parameters)
+        distribution->parameter(it.first, it.second->clone());
     return distribution;
 }
 

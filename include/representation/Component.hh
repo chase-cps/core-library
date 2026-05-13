@@ -8,6 +8,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include "ComponentDefinition.hh"
 #include "Name.hh"
@@ -36,7 +37,7 @@ public:
 
   void setParameter(std::string view, std::string param, Value *value);
   Value *getParameterValue(std::string view, std::string param);
-  std::map<std::string, Value *> &getParametersInView(std::string view);
+  std::map<std::string, std::unique_ptr<Value>> &getParametersInView(std::string view);
 
   int accept_visitor(chase::BaseVisitor &v) override;
 
@@ -51,10 +52,10 @@ protected:
   /// of the parameter; the value of the inner map is the value to
   /// assign at the parameter.
   /// \todo Check whether this managing of parameters is correct.
-  std::map<std::string, std::map<std::string, chase::Value *>> _params;
+  std::map<std::string, std::map<std::string, std::unique_ptr<chase::Value>>> _params;
 
   ComponentDefinition *_definition;
-  Name *_name;
+  std::unique_ptr<Name> _name;
 };
 
 } // namespace chase

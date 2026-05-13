@@ -19,22 +19,23 @@ Constant::Constant( Type * type, Name * name, Value * value ) :
 {
     _node_type = constant_node;
 
-    _name->setParent(this);
-    _type->setParent(this);
+    if(_name != nullptr) _name->setParent(this);
+    if(_type != nullptr) _type->setParent(this);
+    if(_value != nullptr) _value->setParent(this);
 }
 
-Constant::~Constant()
-{
-    if(_name != nullptr) delete _name;
-    if(_type != nullptr) delete _type;
-}
+Constant::~Constant() = default;
 
 Constant::Constant( const Constant &o ) :
-    DataDeclaration( o._type, o._name )
+    DataDeclaration(
+            o._type != nullptr ? o._type->clone() : nullptr,
+            o._name != nullptr ? o._name->clone() : nullptr),
+    _value(o._value != nullptr ? o._value->clone() : nullptr)
 {
     _node_type = constant_node;
-    _name->setParent(this);
-    _type->setParent(this);
+    if(_name != nullptr) _name->setParent(this);
+    if(_type != nullptr) _type->setParent(this);
+    if(_value != nullptr) _value->setParent(this);
 }
 
 Constant & Constant::operator=(const Constant & )
@@ -66,14 +67,21 @@ int Constant::accept_visitor( BaseVisitor &v )
 }
 
 void Constant::setValue(Value *value) {
-    _value = value;
+    if(_value.get() == value) {
+        if(_value != nullptr) _value->setParent(this);
+        return;
+    }
+    _value.reset(value);
+    if(_value != nullptr) _value->setParent(this);
 }
 
 Value *Constant::getValue() {
-    return _value;
+    return _value.get();
 }
 
 Constant * Constant::clone() {
     return new Constant(
-            _type->clone(), _name->clone(), _value->clone());
+            _type != nullptr ? _type->clone() : nullptr,
+            _name != nullptr ? _name->clone() : nullptr,
+            _value != nullptr ? _value->clone() : nullptr);
 }

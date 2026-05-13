@@ -11,6 +11,8 @@
 #include "representation/Name.hh"
 #include "representation/Integer.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Class representing custom types that act as alias for types.
@@ -29,7 +31,7 @@ namespace chase {
         /// @param name Pointer to the name of the type to declare.
         /// @param type Pointer to the type.
         CustomType(
-                Name * name = new Name(""),
+                Name * name = nullptr,
                 Type * type = nullptr);
 
         /// @brief Getter of the type.
@@ -56,8 +58,8 @@ namespace chase {
         Type *clone() override;
 
     protected:
-        Name * _name;
-        Type * _type;
+        std::unique_ptr<Name> _name;
+        std::unique_ptr<Type> _type;
 
     };
 

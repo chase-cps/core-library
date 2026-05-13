@@ -22,15 +22,15 @@ void Contract:: mergeDeclarations(
 {
     /// \todo Implement the type checking.
 
-    for(auto original : c1->declarations) {
+    for(auto & original : c1->declarations) {
         auto cloned = original->clone();
-        std::pair< Declaration*, Declaration *> p(original, cloned);
+        std::pair< Declaration*, Declaration *> p(original.get(), cloned);
         declaration_map.insert(p);
 
-        r->declarations.push_back(cloned);
+        r->addDeclaration(cloned);
     }
 
-    for(auto original : c2->declarations)
+    for(auto & original : c2->declarations)
     {
         std::string name = original->getName()->getString();
         auto found = correspondences.find(name);
@@ -44,16 +44,16 @@ void Contract:: mergeDeclarations(
             }
 
             auto cloned = original->clone();
-            std::pair< Declaration*, Declaration *> p(original, cloned);
+            std::pair< Declaration*, Declaration *> p(original.get(), cloned);
             declaration_map.insert(p);
 
-            r->declarations.push_back(cloned);
+            r->addDeclaration(cloned);
         }
         else {
             std::string to_find = found->second;
             for(auto & declaration : r->declarations) {
                 if(declaration->getName()->getString() == to_find ) {
-                    std::pair< Declaration*, Declaration *> p(original,declaration);
+                    std::pair< Declaration*, Declaration *> p(original.get(), declaration.get());
                     declaration_map.insert(p);
                 }
             }
@@ -82,14 +82,14 @@ Contract * Contract::composition(
             std::vector< Declaration * > originals;
             for(auto & mit : declaration_map )
             {
-                if(mit.second == dit)
+                if(mit.second == dit.get())
                     originals.push_back(mit.first);
             }
             for(auto & vit : originals)
             {
                 if(vit->IsA() == variable_node)
                 {
-                    auto var = reinterpret_cast< Variable * >(dit);
+                    auto var = reinterpret_cast< Variable * >(dit.get());
                     auto original =
                             reinterpret_cast< Variable * >(vit);
                     if(original->getCausality() == output && var->getCausality() == input)
@@ -122,28 +122,28 @@ void Contract::composeLogic(
     auto i = c1->assumptions.find(logic);
     if(i != c1->assumptions.end())
     {
-        a1 = dynamic_cast<LogicFormula *>(i->second);
+        a1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->assumptions.find(logic);
     if(i != c2->assumptions.end())
     {
-        a2 = dynamic_cast<LogicFormula *>(i->second);
+        a2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c1->guarantees.find(logic);
     if(i != c1->guarantees.end())
     {
-        g1 = dynamic_cast<LogicFormula *>(i->second);
+        g1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->guarantees.find(logic);
     if(i != c2->guarantees.end())
     {
-        g2 = dynamic_cast<LogicFormula *>(i->second);
+        g2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
@@ -206,28 +206,28 @@ void Contract::conjoinLogic(Contract *c1, Contract *c2, Contract *r)
     auto i = c1->assumptions.find(logic);
     if(i != c1->assumptions.end())
     {
-        a1 = dynamic_cast<LogicFormula *>(i->second);
+        a1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->assumptions.find(logic);
     if(i != c2->assumptions.end())
     {
-        a2 = dynamic_cast<LogicFormula *>(i->second);
+        a2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c1->guarantees.find(logic);
     if(i != c1->guarantees.end())
     {
-        g1 = dynamic_cast<LogicFormula *>(i->second);
+        g1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->guarantees.find(logic);
     if(i != c2->guarantees.end())
     {
-        g2 = dynamic_cast<LogicFormula *>(i->second);
+        g2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
@@ -291,25 +291,25 @@ void Contract::quotientLogic(
 
     auto i = c1->assumptions.find(logic);
     if (i != c1->assumptions.end()) {
-        a1 = dynamic_cast<LogicFormula *>(i->second);
+        a1 = dynamic_cast<LogicFormula *>(i->second.get());
         if (a1 == nullptr) messageError("Wrong format in Logic.");
     }
 
     i = c2->assumptions.find(logic);
     if (i != c2->assumptions.end()) {
-        a2 = dynamic_cast<LogicFormula *>(i->second);
+        a2 = dynamic_cast<LogicFormula *>(i->second.get());
         if (a2 == nullptr) messageError("Wrong format in Logic.");
     }
 
     i = c1->guarantees.find(logic);
     if (i != c1->guarantees.end()) {
-        g1 = dynamic_cast<LogicFormula *>(i->second);
+        g1 = dynamic_cast<LogicFormula *>(i->second.get());
         if (g1 == nullptr) messageError("Wrong format in Logic.");
     }
 
     i = c2->guarantees.find(logic);
     if (i != c2->guarantees.end()) {
-        g2 = dynamic_cast<LogicFormula *>(i->second);
+        g2 = dynamic_cast<LogicFormula *>(i->second.get());
         if (g2 == nullptr) messageError("Wrong format in Logic.");
     }
 
@@ -365,37 +365,32 @@ void Contract::saturateLogic(Contract * c )
 
     if(a != c->assumptions.end())
     {
-        assumptions = dynamic_cast< LogicFormula * >(a->second);
+        assumptions = dynamic_cast< LogicFormula * >(a->second.get());
         if(assumptions == nullptr)
             messageError("Non logic formula in temporal logic domain");
     }
 
     if(g != c->guarantees.end())
     {
-        guarantees = dynamic_cast< LogicFormula * >(g->second);
+        guarantees = dynamic_cast< LogicFormula * >(g->second.get());
         if(guarantees == nullptr)
             messageError("Non logic formula in temporal logic domain");
     }
 
-    if(assumptions != nullptr ) {
-        guarantees = Or(Not(assumptions->clone()), guarantees);
-    }else{
+    if(assumptions == nullptr) {
         return; // No saturation necessary.
     }
 
-    if( guarantees == nullptr )
-        // Then, create new guarantees negating the
-        // assumptions.
-    {
-        std::pair< semantic_domain, Specification * > p(
-                logic, Not(assumptions->clone()));
-        c->guarantees.insert(p);
+    if( guarantees == nullptr ) {
+        c->addGuarantees(logic, Not(assumptions->clone()));
     }
     else
     {
         auto parent = guarantees->getParent();
-        g->second = guarantees;
-        guarantees->setParent(parent);
+        auto oldGuarantees = static_cast<LogicFormula *>(g->second.release());
+        auto saturated = Or(Not(assumptions->clone()), oldGuarantees);
+        g->second.reset(saturated);
+        saturated->setParent(parent);
     }
 }
 
@@ -426,48 +421,44 @@ void Contract::refinementCheckLogic(Contract *c1, Contract *c2, Contract *r) {
     auto i = c1->assumptions.find(logic);
     if(i != c1->assumptions.end())
     {
-        a1 = dynamic_cast<LogicFormula *>(i->second);
+        a1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->assumptions.find(logic);
     if(i != c2->assumptions.end())
     {
-        a2 = dynamic_cast<LogicFormula *>(i->second);
+        a2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( a2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c1->guarantees.find(logic);
     if(i != c1->guarantees.end())
     {
-        g1 = dynamic_cast<LogicFormula *>(i->second);
+        g1 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g1 == nullptr ) messageError("Wrong format in Logic.");
     }
 
     i = c2->guarantees.find(logic);
     if(i != c2->guarantees.end())
     {
-        g2 = dynamic_cast<LogicFormula *>(i->second);
+        g2 = dynamic_cast<LogicFormula *>(i->second.get());
         if( g2 == nullptr ) messageError("Wrong format in Logic.");
     }
 
 
     /// \todo Reason about correctness in the case one is a nullptr.
-    if( a1 == nullptr )
-        a1 = True();
-    if( a2 == nullptr )
-        a2 = True();
-    auto assumptions = Implies(a2, a1);
+    auto leftAssumptions = a2 == nullptr ? True() : a2->clone();
+    auto rightAssumptions = a1 == nullptr ? True() : a1->clone();
+    auto assumptions = Implies(leftAssumptions, rightAssumptions);
 
-    if( g1 == nullptr )
-        g1 = True();
-    if( g2 == nullptr )
-        g2 = True();
+    auto leftGuarantees = g1 == nullptr ? True() : g1->clone();
+    auto rightGuarantees = g2 == nullptr ? True() : g2->clone();
 
-    g1 = Or(g1, Not(a1->clone()));
-    g2 = Or(g2, Not(a2->clone()));
+    leftGuarantees = Or(leftGuarantees, Not(rightAssumptions->clone()));
+    rightGuarantees = Or(rightGuarantees, Not(leftAssumptions->clone()));
 
-    auto guarantees = Implies(g1, g2);
+    auto guarantees = Implies(leftGuarantees, rightGuarantees);
     r->addAssumptions(logic, assumptions);
     r->addGuarantees(logic, guarantees);
 }

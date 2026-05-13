@@ -16,31 +16,27 @@ System::System(std::string name) : Scope(std::move(name)) {
   _node_type = system_node;
 }
 
-System::~System() {
-  for (auto declaration : declarations) {
-    delete declaration;
-  }
-  for (auto contract : _contracts) {
-    delete contract;
-  }
-  for (auto component : _components) {
-    delete component;
-  }
-}
+System::~System() = default;
 
 void System::addDeclaration(Declaration *declaration) {
-  declarations.push_back(declaration);
+  if(declaration == nullptr) return;
+  for(auto & owned : declarations)
+    if(owned.get() == declaration) return;
+  declarations.emplace_back(declaration);
   declaration->setParent(this);
 }
 
 void System::addContract(Contract *contract) {
-  _contracts.insert(contract);
+  if(contract == nullptr) return;
+  for(auto & owned : _contracts)
+    if(owned.get() == contract) return;
+  _contracts.emplace(contract);
   contract->setParent(this);
 }
 
-std::list<Declaration *> &System::getDeclarationsSet() { return declarations; }
+std::list<std::unique_ptr<Declaration>> &System::getDeclarationsSet() { return declarations; }
 
-std::set<Contract *> &System::getContractsSet() { return _contracts; }
+std::set<std::unique_ptr<Contract>> &System::getContractsSet() { return _contracts; }
 
 int System::accept_visitor(chase::BaseVisitor &v) {
   return v.visitSystem(*this);
@@ -71,7 +67,7 @@ System *System::clone() {
   std::map<Declaration *, Declaration *> declaration_map;
 
   for (auto it = declarations.begin(); it != declarations.end(); ++it) {
-    Declaration *current = *it;
+    Declaration *current = it->get();
     auto dec = current->clone();
     std::pair<Declaration *, Declaration *> p(current, dec);
     ret->addDeclaration(dec);
@@ -93,8 +89,11 @@ System *System::clone() {
 }
 
 void System::addComponent(Component *component) {
-  _components.insert(component);
+  if(component == nullptr) return;
+  for(auto & owned : _components)
+    if(owned.get() == component) return;
+  _components.emplace(component);
   component->setParent(this);
 }
 
-std::set<Component *> &System::getComponentsSet() { return _components; }
+std::set<std::unique_ptr<Component>> &System::getComponentsSet() { return _components; }

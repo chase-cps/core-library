@@ -17,15 +17,11 @@ Variable::Variable( Type * type, Name * name, causality_t causality ) :
     _causality(causality)
 {
     _node_type = variable_node;
-    _name->setParent(this);
-    _type->setParent(this);
+    if(_name != nullptr) _name->setParent(this);
+    if(_type != nullptr) _type->setParent(this);
 }
 
-Variable::~Variable()
-{
-    delete _name;
-    delete _type;
-}
+Variable::~Variable() = default;
 
 std::string Variable::getString()
 {

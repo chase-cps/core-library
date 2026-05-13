@@ -15,6 +15,8 @@
 #include "representation/Type.hh"
 #include "representation/Boolean.hh"
 
+#include <memory>
+
 
 
 namespace chase {
@@ -77,6 +79,9 @@ namespace chase {
             /// @return Clone of the object.
             Expression * clone() override;
 
+            std::unique_ptr<Value> releaseOp1();
+            std::unique_ptr<Value> releaseOp2();
+
         protected:
 
             /// @brief Operator.
@@ -85,9 +90,9 @@ namespace chase {
             Operator _op;
 
             /// @brief First operand.
-            Value * _op1;
+            std::unique_ptr<Value> _op1;
             /// @brief First operand.
-            Value * _op2;
+            std::unique_ptr<Value> _op2;
 
     };
 }

@@ -67,18 +67,19 @@ GroupTemporalOperatorsVisitor::_analyzeFormula(LogicFormula *formula)
         std::vector< LogicFormula * > _untimed;
         for(size_t i = 0; i < lbf->operands.size(); ++i)
         {
-            if( lbf->operands[i]->IsA() == unaryTemporalOperation_node )
+            auto operand = lbf->getOperand(i);
+            if( operand->IsA() == unaryTemporalOperation_node )
             {
                 auto f = reinterpret_cast< UnaryTemporalFormula* >(
-                                lbf->operands[i]);
+                                operand);
                 if(f->getOp() == op_globally)
-                    _always.push_back(lbf->operands[i]);
+                    _always.push_back(operand);
                 if(f->getOp() == op_future)
-                    _eventually.push_back(lbf->operands[i]);
+                    _eventually.push_back(operand);
             }
             else
             {
-                _untimed.push_back(lbf->operands[i]);
+                _untimed.push_back(operand);
             }
         }
 
@@ -87,7 +88,6 @@ GroupTemporalOperatorsVisitor::_analyzeFormula(LogicFormula *formula)
     }
     return ret;
 }
-
 
 
 

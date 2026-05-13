@@ -11,18 +11,19 @@
 using namespace chase;
 
 Graph::Graph( unsigned int size, bool directed, Name * name ) :
-    _vertexes(size, nullptr), // Initialize the vertexes vector.
+    _vertexes(size), // Initialize the vertexes vector.
     _size(size),
     _directed(directed),
     _name(name)
 {
     _node_type = graph_node;
+    if(_name == nullptr) _name.reset(new Name("GenericGraph"));
+    _name->setParent(this);
 
     // Initialize the adjacency matrix.
     for (unsigned int i = 0; i < _size; ++i)
         for (unsigned int j = 0; j < _size; ++j) {
-            AdjMatrixElement e(
-                    std::pair<unsigned int, unsigned int>(i,j), nullptr);
+            _matrix.emplace(std::pair<unsigned int, unsigned int>(i,j), nullptr);
         }
 }
 
@@ -48,10 +49,9 @@ std::string Graph::getString() {
 
     // Print edges.
     ret += "Edges:\n";
-    std::set< Edge * >::iterator it;
-    for( it = _edges.begin(); it != _edges.end(); ++it )
+    for(const auto & it : _edges )
     {
-        Edge * e = (*it);
+        Edge * e = it.get();
         ret += "\t";
         ret += e->getString();
         ret += "\n";
@@ -62,15 +62,18 @@ std::string Graph::getString() {
 
 void Graph::associateVertex(unsigned int index, Vertex *vertex) {
     if(index < _size) {
-        _vertexes[index] = vertex;
-        vertex->setParent(this);
+        _vertexes[index].reset(vertex);
+        if(vertex != nullptr) vertex->setParent(this);
     }
     else messageError("Error creating the graph. Index out of size.");
 
 }
 
 void Graph::addEdge(Edge *edge) {
-    _edges.insert(edge);
+    if(edge == nullptr) return;
+    for(auto & owned : _edges)
+        if(owned.get() == edge) return;
+    _edges.emplace(edge);
     edge->setParent(this);
 
     // Update the adjacency matrix.
@@ -95,9 +98,9 @@ bool Graph::isDirected() const {
 
 Edge * Graph::getEdge(unsigned int source, unsigned int target) {
 
-    for(auto it = _edges.begin(); it != _edges.end(); ++it )
+    for(auto & it : _edges )
     {
-        Edge * edge = *it;
+        Edge * edge = it.get();
         if(edge->getSource() == source && edge->getTarget() == target)
             return edge;
     }
@@ -106,15 +109,20 @@ Edge * Graph::getEdge(unsigned int source, unsigned int target) {
 
 Vertex *Graph::getVertex(unsigned int vertex_id) {
     if( vertex_id >= _size ) return nullptr;
-    return _vertexes[vertex_id];
+    return _vertexes[vertex_id].get();
 }
 
 Name *Graph::getName() const {
-    return _name;
+    return _name.get();
 }
 
 void Graph::setName(Name *name) {
-    _name = name;
+    if(_name.get() == name) {
+        if(_name != nullptr) _name->setParent(this);
+        return;
+    }
+    _name.reset(name);
+    if(_name != nullptr) _name->setParent(this);
 }
 
 std::string Graph::getGraphViz() {
@@ -125,10 +133,9 @@ std::string Graph::getGraphViz() {
         ret = "graph ";
     ret += _name->getString() + "{\n";
 
-    std::set< Edge * >::iterator it;
-    for(it = _edges.begin(); it != _edges.end(); ++it)
+    for(auto & it : _edges)
     {
-        Edge * e = *it;
+        Edge * e = it.get();
         unsigned int s = e->getSource();
         unsigned int t = e->getTarget();
         ret += "\t" + std::to_string(s);
@@ -144,9 +151,9 @@ std::string Graph::getGraphViz() {
 std::set<unsigned int> Graph::getAdjacentNodes(unsigned int id) {
     std::set< unsigned int> adjList;
 
-    for(auto it = _edges.begin(); it != _edges.end(); ++it)
+    for(auto & it : _edges)
     {
-        Edge * edge = *it;
+        Edge * edge = it.get();
         if(edge->getSource() == id)
             adjList.insert(edge->getTarget());
         if(! _directed && edge->getTarget() == id )
@@ -161,7 +168,7 @@ int Graph::getVertexIndex(std::string name)
 
     for (size_t i = 0; i < _vertexes.size(); ++i)
     {
-        if( name == _vertexes[i]->getName()->getString() )
+        if(_vertexes[i] != nullptr && name == _vertexes[i]->getName()->getString() )
             return i;
     }
     return -1;
@@ -176,19 +183,18 @@ Graph::~Graph() = default;
 
 Graph *Graph::clone() {
     /// \todo Manage the graph copy with correspondences.
-    auto ret = new Graph(_size, _name->clone());
+    auto ret = new Graph(_size, _directed, _name->clone());
 
     // Clone all the vertexes.
     for( size_t n = 0; n < _vertexes.size(); ++n )
     {
-        auto v = _vertexes[n]->clone();
-        ret->associateVertex(n, v);
+        if(_vertexes[n] != nullptr)
+            ret->associateVertex(n, _vertexes[n]->clone());
     }
 
-    for(auto v = _edges.begin(); v != _edges.end(); ++v )
+    for(auto & v : _edges )
     {
-        auto edge = *v;
-        ret->addEdge(edge->clone());
+        ret->addEdge(v->clone());
     }
 
     return ret;

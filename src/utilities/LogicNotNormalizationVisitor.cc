@@ -103,9 +103,9 @@ LogicNotNormalizationVisitor::_analyzeFormula(LogicFormula *formula)
                 auto inner = static_cast< LargeBooleanFormula * >(f);
                 for(size_t i = 0; i < inner->operands.size(); ++i)
                 {
-                    inner->operands[i]->accept_visitor(*this);
-                    inner->operands[i] =
-                            Not(inner->operands[i]);
+                    inner->getOperand(i)->accept_visitor(*this);
+                    auto operand = inner->releaseOperand(i);
+                    inner->setOperand(i, Not(operand.release()));
                 }
                 auto op = inner->getOp();
                 switch(op) {

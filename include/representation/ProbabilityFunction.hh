@@ -10,11 +10,14 @@
 #include "representation/Value.hh"
 #include "representation/Specification.hh"
 
+#include <memory>
+
 namespace chase {
 
     class ProbabilityFunction : public Value {
     public:
         /// @brief Constructor.
+        /// @param specification Specification to evaluate. Ownership is transferred.
         ProbabilityFunction(Specification * specification = nullptr);
 
         /// @brief Destructor.
@@ -38,12 +41,16 @@ namespace chase {
         Specification *getSpecification() const;
 
         /// @brief Setter of the specification.
-        /// @param specification Pointer to th specification.
+        /// @param specification Pointer to th specification. Ownership is transferred.
         void setSpecification(Specification *specification);
+
+        /// @brief Release ownership of the specification.
+        /// @return The specification as an owning pointer.
+        std::unique_ptr<Specification> releaseSpecification();
 
     protected:
         /// @brief The specification being evaluated.
-        Specification * _specification{};
+        std::unique_ptr<Specification> _specification{};
 
     };
 

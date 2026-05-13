@@ -1,5 +1,3 @@
-find_package(PythonLibs REQUIRED)
-
 include_directories(
         ${PROJECT_SOURCE_DIR}/core/include
         ${PROJECT_SOURCE_DIR}/core/include/representation

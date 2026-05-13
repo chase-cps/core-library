@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Value.hh"
+#include <memory>
 #include <vector>
 
 namespace chase {
@@ -69,7 +70,7 @@ namespace chase {
 
     protected:
         /// @brief elements of the Matrix.
-        std::vector< Value * > elements;
+        std::vector< std::unique_ptr<Value> > elements;
         /// @brief Number of rows in the Matrix.
         unsigned int _rows;
         /// @brief Number of columns in the Matrix.

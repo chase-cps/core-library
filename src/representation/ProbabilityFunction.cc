@@ -15,13 +15,11 @@ ProbabilityFunction::ProbabilityFunction(Specification * specification) :
     _specification(specification)
 {
     _node_type  = probabilityFunction_node;
-    _type = new Real(0.0, 1.0);
+    setType(new Real(0.0, 1.0));
+    if(_specification != nullptr) _specification->setParent(this);
 }
 
-ProbabilityFunction::~ProbabilityFunction()
-{
-    delete _specification;
-}
+ProbabilityFunction::~ProbabilityFunction() = default;
 
 int ProbabilityFunction::accept_visitor(BaseVisitor &v) {
     return v.visitProbabilityFunction(*this);
@@ -29,23 +27,36 @@ int ProbabilityFunction::accept_visitor(BaseVisitor &v) {
 
 std::string ProbabilityFunction::getString() {
     std::string ret("P(");
-    ret += _specification->getString();
+    if(_specification != nullptr) ret += _specification->getString();
     ret += ")";
     return ret;
 }
 
 ProbabilityFunction *ProbabilityFunction::clone()
 {
-    auto ret = new ProbabilityFunction(_specification->clone());
+    auto ret = new ProbabilityFunction(
+            _specification != nullptr ? _specification->clone() : nullptr);
     return ret;
 }
 
 Specification *ProbabilityFunction::getSpecification() const
 {
-    return _specification;
+    return _specification.get();
 }
 
 void ProbabilityFunction::setSpecification(Specification *specification)
 {
-    _specification = specification;
+    if(_specification.get() == specification) {
+        if(_specification != nullptr) _specification->setParent(this);
+        return;
+    }
+    _specification.reset(specification);
+    if(_specification != nullptr) _specification->setParent(this);
+}
+
+std::unique_ptr<Specification> ProbabilityFunction::releaseSpecification()
+{
+    auto ret = std::move(_specification);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
 }

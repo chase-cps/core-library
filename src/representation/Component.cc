@@ -17,11 +17,10 @@ Component::Component( ComponentDefinition * definition, std::string name ) :
     _name(new Name(name))
 {
     _node_type = component_node;
+    _name->setParent(this);
 }
 
-Component::~Component() {
-    delete _name;
-}
+Component::~Component() = default;
 
 ComponentDefinition * Component::getDefinition() const {
     return _definition;
@@ -32,27 +31,28 @@ void Component::setDefinition(ComponentDefinition * definition) {
 }
 
 Name *Component::getName() const {
-    return _name;
+    return _name.get();
 }
 
 void Component::setName(Name *name) {
-    _name = name;
+    if(_name.get() == name) {
+        if(_name != nullptr) _name->setParent(this);
+        return;
+    }
+    _name.reset(name);
+    if(_name != nullptr) _name->setParent(this);
 }
 
 void
 Component::setParameter(std::string view, std::string param, Value *value)
 {
-    std::pair< std::string, Value * > p(param, value);
-    auto it = _params.find(view);
-    if( it == _params.end() )
-    {
-        std::pair<
-                std::string,
-                std::map< std::string, Value * > > v;
-        v.first = view;
-        v.second.insert(p);
-    }
-    it->second.insert(p);
+    auto & params = _params[view];
+    auto it = params.find(param);
+    if(it == params.end())
+        params.emplace(param, std::unique_ptr<Value>(value));
+    else
+        it->second.reset(value);
+    if(value != nullptr) value->setParent(this);
 }
 
 Value *Component::getParameterValue(std::string view, std::string param)
@@ -63,18 +63,13 @@ Value *Component::getParameterValue(std::string view, std::string param)
     auto p = v->second.find(param);
     if( p == v->second.end() ) return nullptr;
 
-    return p->second;
+    return p->second.get();
 }
 
-std::map<std::string, Value *>&
+std::map<std::string, std::unique_ptr<Value>>&
     Component::getParametersInView(std::string view)
 {
-    auto v = _params.find(view);
-
-    if( v != _params.end() )
-        return v->second;
-    else
-        return _params.end()->second;
+    return _params[view];
 }
 
 int Component::accept_visitor(chase::BaseVisitor &v) {
@@ -90,7 +85,7 @@ std::string Component::getString() {
         for (auto j = i->second.begin(); j != i->second.end(); ++j)
         {
             std::string param = j->first;
-            std::string val = j->second->getString();
+            std::string val = j->second != nullptr ? j->second->getString() : "";
 
             ret += ("parameter " + param + " = " + val + "\n");
         }
@@ -104,18 +99,12 @@ Component *Component::clone() {
     for(auto i = _params.begin(); i != _params.end(); ++i)
     {
         std::string view = i->first;
-        std::pair< std::string,std::map< std::string, chase::Value * > > p;
-
         for( auto j = i->second.begin(); j != i->second.end(); ++j )
         {
             std::string param = j->first;
-            Value * val = j->second->clone();
-            std::pair< std::string, chase::Value * > par( param,val );
-
-            p.second.insert(par);
+            Value * val = j->second != nullptr ? j->second->clone() : nullptr;
+            ret->setParameter(view, param, val);
         }
-        p.first = view;
-        ret->_params.insert(p);
     }
 
     return ret;

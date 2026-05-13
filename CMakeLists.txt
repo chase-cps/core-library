@@ -21,7 +21,8 @@ endif()
 
 project (CHASE VERSION 1.0.0)
 
-find_package(PythonLibs REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
+set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -204,5 +205,4 @@ install(
 
 add_subdirectory(pychase)
 add_subdirectory(doc)
-
 

@@ -10,6 +10,8 @@
 #include "representation/LogicFormula.hh"
 #include "representation/Variable.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Quantifiers.
@@ -33,7 +35,7 @@ namespace chase {
         /// @param formula Quantified formula.
         QuantifiedFormula(
                 logic_quantifier quantifier = forall,
-                Variable * variable = new Variable(),
+                Variable * variable = nullptr,
                 LogicFormula * formula = nullptr
                 );
 
@@ -72,13 +74,16 @@ namespace chase {
         /// @return The clone of the object.
         QuantifiedFormula *clone() override;
 
+        std::unique_ptr<Variable> releaseVariable();
+        std::unique_ptr<LogicFormula> releaseFormula();
+
     protected:
         /// @brief Quantifier of the formula.
         logic_quantifier _quantifier;
         /// @brief Quantified variable.
-        Variable * _variable;
+        std::unique_ptr<Variable> _variable;
         /// @brief Formula being quantified.
-        LogicFormula * _formula;
+        std::unique_ptr<LogicFormula> _formula;
 
 
 

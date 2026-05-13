@@ -19,8 +19,8 @@ Expression::Expression() :
     _op2(nullptr)
 {
     _node_type = expression_node;
-    _op1->setParent(this);
-    _op2->setParent(this);
+    if(_op1 != nullptr) _op1->setParent(this);
+    if(_op2 != nullptr) _op2->setParent(this);
 }
 
 Expression::Expression(Operator op, Value *op1, Value *op2 ) :
@@ -30,13 +30,11 @@ Expression::Expression(Operator op, Value *op1, Value *op2 ) :
     _op2(op2)
 {
     _node_type = expression_node;
-    _op1->setParent(this);
-    _op2->setParent(this);
+    if(_op1 != nullptr) _op1->setParent(this);
+    if(_op2 != nullptr) _op2->setParent(this);
 }
 
-Expression::~Expression()
-{
-}
+Expression::~Expression() = default;
 
 
 Operator Expression::getOperator()
@@ -46,12 +44,12 @@ Operator Expression::getOperator()
 
 Value * Expression::getOp1()
 {
-    return _op1;
+    return _op1.get();
 }
 
 Value * Expression::getOp2()
 {
-    return _op2;
+    return _op2.get();
 }
 
 void Expression::setOperator(Operator op )
@@ -61,12 +59,22 @@ void Expression::setOperator(Operator op )
 
 void Expression::setOp1(Value * op )
 {
-    _op1 = op;
+    if(_op1.get() == op) {
+        if(_op1 != nullptr) _op1->setParent(this);
+        return;
+    }
+    _op1.reset(op);
+    if(_op1 != nullptr) _op1->setParent(this);
 }
 
 void Expression::setOp2(Value * op )
 {
-    _op2 = op;
+    if(_op2.get() == op) {
+        if(_op2 != nullptr) _op2->setParent(this);
+        return;
+    }
+    _op2.reset(op);
+    if(_op2 != nullptr) _op2->setParent(this);
 }
 
 std::string Expression::getString()
@@ -92,6 +100,22 @@ Type * Expression::getType()
 }
 
 Expression *Expression::clone() {
-    return new Expression(_op, _op1->clone(), _op2->clone());
+    return new Expression(
+            _op,
+            _op1 != nullptr ? _op1->clone() : nullptr,
+            _op2 != nullptr ? _op2->clone() : nullptr);
 }
 
+std::unique_ptr<Value> Expression::releaseOp1()
+{
+    auto ret = std::move(_op1);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}
+
+std::unique_ptr<Value> Expression::releaseOp2()
+{
+    auto ret = std::move(_op2);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}

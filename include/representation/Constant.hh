@@ -12,6 +12,8 @@
 
 #include "representation/DataDeclaration.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Class representing a Constant declaration.
@@ -62,6 +64,6 @@ namespace chase {
 
         protected:
             /// @brief Value of the constant.
-            Value * _value;
+            std::unique_ptr<Value> _value;
     };
 }

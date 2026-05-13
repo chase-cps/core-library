@@ -18,8 +18,7 @@ DesignProblem::DesignProblem() :
     _node_type = design_problem_node;
 }
 
-DesignProblem::~DesignProblem() {
-}
+DesignProblem::~DesignProblem() = default;
 
 int DesignProblem::accept_visitor(BaseVisitor &v) {
     return v.visitDesignProblem(*this);
@@ -32,16 +31,19 @@ std::string DesignProblem::getString() {
 
 DesignProblem *DesignProblem::clone() {
     auto ret = new DesignProblem();
-    for(auto it : libraries)
-        ret->libraries.insert(it->clone());
+    for(auto & it : libraries)
+        ret->libraries.emplace(it->clone());
+    for(auto & it : requirements)
+        ret->requirements.emplace(it->clone());
+    if(_system != nullptr) ret->setSystem(_system->clone());
     return ret;
 }
 
 System *DesignProblem::getSystem() const {
-    return _system;
+    return _system.get();
 }
 
 void DesignProblem::setSystem(System *system) {
-    _system = system;
-    system->setParent(this);
+    _system.reset(system);
+    if(system != nullptr) system->setParent(this);
 }

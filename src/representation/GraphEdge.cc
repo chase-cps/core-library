@@ -61,20 +61,24 @@ WeightedEdge::WeightedEdge(unsigned int source, unsigned int target,
         Edge(source, target),
         _weight(weight)
 {
-    weight->setParent(this);
+    if(_weight != nullptr) _weight->setParent(this);
 }
 
 WeightedEdge::~WeightedEdge() = default;
 
 Value *WeightedEdge::getWeight() const
 {
-    return _weight;
+    return _weight.get();
 }
 
 void WeightedEdge::setWeight(Value * weight)
 {
-    _weight = weight;
-    weight->setParent(this);
+    if(_weight.get() == weight) {
+        if(_weight != nullptr) _weight->setParent(this);
+        return;
+    }
+    _weight.reset(weight);
+    if(_weight != nullptr) _weight->setParent(this);
 }
 
 std::string WeightedEdge::getString() {
@@ -83,7 +87,7 @@ std::string WeightedEdge::getString() {
     if( p == nullptr ) messageError("Edge not in graph.");
     if(p->isDirected()) ret += " --( ";
     else ret += " <--( ";
-    ret += _weight->getString();
+    if(_weight != nullptr) ret += _weight->getString();
     ret += " )--> ";
     ret += std::to_string(_target);
     return ret;
@@ -100,4 +104,3 @@ Edge *Edge::clone() {
 WeightedEdge *WeightedEdge::clone() {
     return new WeightedEdge(_source, _target, _weight->clone());
 }
-

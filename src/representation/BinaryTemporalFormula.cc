@@ -24,17 +24,17 @@ BinaryTemporalFormula::BinaryTemporalFormula(
 {
     _node_type = binaryTemporalOperation_node;
 
-    if(_formula1->getParent() != nullptr )
-        messageWarning("Formula with already set parent", _formula1);
-    else _formula1->setParent(this);
+    if(_formula1 != nullptr && _formula1->getParent() != nullptr )
+        messageWarning("Formula with already set parent", _formula1.get());
+    else if(_formula1 != nullptr) _formula1->setParent(this);
 
-    if(_formula2->getParent() != nullptr )
-        messageWarning("Formula with already set parent", _formula2);
-    else _formula2->setParent(this);
+    if(_formula2 != nullptr && _formula2->getParent() != nullptr )
+        messageWarning("Formula with already set parent", _formula2.get());
+    else if(_formula2 != nullptr) _formula2->setParent(this);
 
     if(_interval != nullptr) {
         if(_interval->getParent() != nullptr){
-            messageWarning("Interval with already set parent", _interval);
+            messageWarning("Interval with already set parent", _interval.get());
         } else _interval->setParent(this);
     }
 }
@@ -48,19 +48,29 @@ void BinaryTemporalFormula::setOp(TemporalOperator op) {
 }
 
 LogicFormula *BinaryTemporalFormula::getFormula1() const {
-    return _formula1;
+    return _formula1.get();
 }
 
 void BinaryTemporalFormula::setFormula1(LogicFormula *formula1) {
-    _formula1 = formula1;
+    if(_formula1.get() == formula1) {
+        if(_formula1 != nullptr) _formula1->setParent(this);
+        return;
+    }
+    _formula1.reset(formula1);
+    if(_formula1 != nullptr) _formula1->setParent(this);
 }
 
 LogicFormula *BinaryTemporalFormula::getFormula2() const {
-    return _formula2;
+    return _formula2.get();
 }
 
 void BinaryTemporalFormula::setFormula2(LogicFormula *formula2) {
-    _formula2 = formula2;
+    if(_formula2.get() == formula2) {
+        if(_formula2 != nullptr) _formula2->setParent(this);
+        return;
+    }
+    _formula2.reset(formula2);
+    if(_formula2 != nullptr) _formula2->setParent(this);
 }
 
 int BinaryTemporalFormula::accept_visitor(chase::BaseVisitor &v) {
@@ -79,15 +89,44 @@ std::string BinaryTemporalFormula::getString() {
 BinaryTemporalFormula *BinaryTemporalFormula::clone()
 {
     return new BinaryTemporalFormula(
-            _op, _formula1->clone(), _formula2->clone());
+            _op,
+            _formula1 != nullptr ? _formula1->clone() : nullptr,
+            _formula2 != nullptr ? _formula2->clone() : nullptr,
+            _interval != nullptr ? _interval->clone() : nullptr);
 }
 
 Interval *BinaryTemporalFormula::getInterval() const {
-    return _interval;
+    return _interval.get();
 }
 
 void BinaryTemporalFormula::setInterval(Interval *interval) {
-    _interval = interval;
+    if(_interval.get() == interval) {
+        if(_interval != nullptr) _interval->setParent(this);
+        return;
+    }
+    _interval.reset(interval);
+    if(_interval != nullptr) _interval->setParent(this);
 }
 
 BinaryTemporalFormula::~BinaryTemporalFormula() = default;
+
+std::unique_ptr<LogicFormula> BinaryTemporalFormula::releaseFormula1()
+{
+    auto ret = std::move(_formula1);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}
+
+std::unique_ptr<LogicFormula> BinaryTemporalFormula::releaseFormula2()
+{
+    auto ret = std::move(_formula2);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}
+
+std::unique_ptr<Interval> BinaryTemporalFormula::releaseInterval()
+{
+    auto ret = std::move(_interval);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}

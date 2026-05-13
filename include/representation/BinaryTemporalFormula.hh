@@ -12,6 +12,8 @@
 
 #include "representation/Operators.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Class representing a binary temporal formula.
@@ -77,18 +79,22 @@ namespace chase {
         /// @return A clone of the object.
         BinaryTemporalFormula * clone() override;
 
+        std::unique_ptr<LogicFormula> releaseFormula1();
+        std::unique_ptr<LogicFormula> releaseFormula2();
+        std::unique_ptr<Interval> releaseInterval();
+
     protected:
 
         /// @brief The operator.
         TemporalOperator _op;
         /// @brief The first operand.
-        LogicFormula * _formula1;
+        std::unique_ptr<LogicFormula> _formula1;
         /// @brief The second operand.
-        LogicFormula * _formula2;
+        std::unique_ptr<LogicFormula> _formula2;
 
         /// @brief Interval in which the temporal operator holds.
         /// Notice: nullptr is to be interpreted as a [0, +Inf) interval.
-        Interval * _interval;
+        std::unique_ptr<Interval> _interval;
 
     };
 

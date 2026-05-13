@@ -10,6 +10,7 @@
 #include "Operators.hh"
 #include "LogicFormula.hh"
 
+#include <memory>
 #include <vector>
 
 namespace chase {
@@ -21,10 +22,13 @@ namespace chase {
     public:
 
         /// @brief The sequence of operands of the big operation.
-        std::vector< LogicFormula * > operands;
+        std::vector< std::unique_ptr<LogicFormula> > operands;
 
         /// @brief Constructor.
         LargeBooleanFormula(BooleanOperator op = op_and );
+
+        LargeBooleanFormula(const LargeBooleanFormula &) = delete;
+        LargeBooleanFormula &operator=(const LargeBooleanFormula &) = delete;
 
         /// @brief Destructor.
         ~LargeBooleanFormula();
@@ -41,6 +45,10 @@ namespace chase {
         /// parent link.
         /// @param f The operand to add.
         void addOperand( LogicFormula *f );
+
+        LogicFormula *getOperand(size_t index) const;
+        void setOperand(size_t index, LogicFormula *f);
+        std::unique_ptr<LogicFormula> releaseOperand(size_t index);
 
         /// @brief Base function for the visitor pattern.
         /// @param v The visitor to be used.

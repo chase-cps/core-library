@@ -24,23 +24,22 @@ Matrix::Matrix(
 
     _node_type = matrix_node;
 
-    elements.reserve(_rows * columns);
+    elements.resize(_rows * columns);
     if(M.size() > 0 && M.size() != (rows * columns))
     {
         messageError("Mismatch in Matrix size and elements");
     }
 
     for (size_t it = 0; it < M.size(); ++it) {
-        elements[it] = M[it];
-        _evaluateType(elements[it]);
-        elements[it]->setParent(this);
+        elements[it].reset(M[it]);
+        if(elements[it] != nullptr) {
+            _evaluateType(elements[it].get());
+            elements[it]->setParent(this);
+        }
     }
 }
 
-Matrix::~Matrix()
-{
-    elements.clear();
-}
+Matrix::~Matrix() = default;
 
 unsigned int Matrix::getRows() const {
     return _rows;
@@ -69,11 +68,11 @@ Value *Matrix::at(unsigned int i, unsigned int j, Value *value) {
                             "Invalid type for scalar value:\n\t"
                             + t->getString());
             }
-            elements[index] = value;
-            _evaluateType(elements[index]);
+            elements[index].reset(value);
+            _evaluateType(elements[index].get());
             elements[index]->setParent(this);
         }
-        return elements[index];
+        return elements[index].get();
     } else return nullptr;
 }
 
@@ -86,42 +85,50 @@ std::string Matrix::getString() {
     for(size_t i = 1; i < _rows; ++i)
     {
         for (size_t j = 1; j < _columns; ++j) {
-            ret += at(i, j)->getString();
+            auto value = at(i, j);
+            if(value != nullptr) ret += value->getString();
             ret += ", ";
         }
-        ret += at(i, _columns)->getString();
+        auto last = at(i, _columns);
+        if(last != nullptr) ret += last->getString();
         ret += ";\n\t";
     }
     for (size_t j = 1; j < _columns; ++j) {
-        ret += at(_rows, j)->getString();
+        auto value = at(_rows, j);
+        if(value != nullptr) ret += value->getString();
         ret += ", ";
     }
-    ret += at(_rows, _columns)->getString();
+    auto last = at(_rows, _columns);
+    if(last != nullptr) ret += last->getString();
     ret += "]";
     return ret;
 }
 
 Matrix *Matrix::clone()
 {
-    return new Matrix(_rows, _columns, elements);
+    std::vector<Value *> clonedElements;
+    clonedElements.reserve(elements.size());
+    for(auto & element : elements)
+        clonedElements.push_back(element != nullptr ? element->clone() : nullptr);
+    return new Matrix(_rows, _columns, clonedElements);
 }
 
 void Matrix::_evaluateType(Value *v)
 {
     Type * t = v->getType();
     if(_type == nullptr) {
-        _type = t->clone();
+        setType(t->clone());
         return;
     }
     if(_type->IsA() == boolean_node && t->IsA() == integer_node) {
-        _type = new Integer();
+        setType(new Integer());
     }
     else if(_type->IsA() == boolean_node && t->IsA() == real_node)
     {
-        _type = new Real();
+        setType(new Real());
     }
     else if(_type->IsA() == integer_node && t->IsA() == real_node)
     {
-        _type = new Real();
+        setType(new Real());
     }
 }

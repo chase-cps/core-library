@@ -10,6 +10,8 @@
 #include "representation/Specification.hh"
 #include "representation/Expression.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Constraint as a specification object.
@@ -40,13 +42,18 @@ namespace chase {
 
         /// @brief Setter of the expression specifying the constraint.
         /// @param expression Pointer to the expression specifying the constraint.
+        /// Ownership is transferred.
         void setExpression(Expression *expression);
+
+        /// @brief Release ownership of the expression.
+        /// @return The expression as an owning pointer.
+        std::unique_ptr<Expression> releaseExpression();
 
 
     protected:
 
         /// @brief Expression
-        Expression * _expression{};
+        std::unique_ptr<Expression> _expression{};
 
     };
 

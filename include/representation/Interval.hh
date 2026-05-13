@@ -11,18 +11,20 @@
 #include "representation/IntegerValue.hh"
 #include "representation/RealValue.hh"
 
+#include <memory>
+
 namespace chase {
 
     class Interval : public Value {
     public:
         /// @brief Constructor.
-        /// @brief lbound Lower bound of the interval.
-        /// @brief rbound Upper bound of the interval.
+        /// @brief lbound Lower bound of the interval. Ownership is transferred.
+        /// @brief rbound Upper bound of the interval. Ownership is transferred.
         /// @brief leftOpen flag set to true if the interval is to be left open.
         /// @brief rightOpen flag se to true if the interval is to be right open.
         explicit Interval(
-                Value * lbound = new IntegerValue(0),
-                Value * rbound = new IntegerValue(1),
+                Value * lbound = nullptr,
+                Value * rbound = nullptr,
                 bool leftOpen = false,
                 bool rightOpen = false
                 );
@@ -62,12 +64,20 @@ namespace chase {
         /// @reutrn The string corresponding to the visitor.
         std::string getString() override;
 
+        /// @brief Release ownership of the left bound.
+        /// @return The left bound as an owning pointer.
+        std::unique_ptr<Value> releaseLeftBound();
+
+        /// @brief Release ownership of the right bound.
+        /// @return The right bound as an owning pointer.
+        std::unique_ptr<Value> releaseRightBound();
+
     protected:
 
         /// @brief Left bound of the interval.
-        Value * _leftBound;
+        std::unique_ptr<Value> _leftBound;
         /// @brief Right bound of the interval.
-        Value * _rightBound;
+        std::unique_ptr<Value> _rightBound;
 
         /// @brief Flag set to true to indicate if the interval is left open.
         bool _leftOpen;

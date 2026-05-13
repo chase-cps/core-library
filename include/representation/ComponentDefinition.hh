@@ -9,6 +9,7 @@
 
 #include "Scope.hh"
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -21,11 +22,11 @@ class Component;
 class ComponentDefinition : public Scope {
 public:
   /// @brief Set of views of the component.
-  std::map<std::string, Contract *> views;
+  std::map<std::string, std::unique_ptr<Contract>> views;
 
   /// @brief Set of subcomponents of the component.
   /// Implements the hierarchy.
-  std::set<Component *> subcomponents;
+  std::set<std::unique_ptr<Component>> subcomponents;
 
   /// @brief Constructor.
   ComponentDefinition();

@@ -8,16 +8,20 @@
 #pragma once
 
 #include "representation/ChaseObject.hh"
+#include <memory>
 #include <set>
 
 namespace chase {
 
+    class Contract;
+    class Library;
+    class System;
 
     class DesignProblem : public ChaseObject {
     public:
 
-        std::set< Library * > libraries;
-        std::set< Contract * > requirements;
+        std::set< std::unique_ptr<Library> > libraries;
+        std::set< std::unique_ptr<Contract> > requirements;
 
         /// @brief Constructor.
         DesignProblem();
@@ -49,7 +53,7 @@ namespace chase {
     protected:
 
         /// @brief The system being designed.
-        System * _system;
+        std::unique_ptr<System> _system;
 
     };
 

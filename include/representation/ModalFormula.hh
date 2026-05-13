@@ -10,6 +10,8 @@
 #include "representation/LogicFormula.hh"
 #include "representation/Operators.hh"
 
+#include <memory>
+
 namespace chase {
 
     /// @brief Class representing the diamond or the square modal operations.
@@ -49,12 +51,14 @@ namespace chase {
         /// @return The cloned object.
         ModalFormula * clone() override;
 
+        std::unique_ptr<LogicFormula> releaseFormula();
+
     protected:
 
         /// @brief The operator.
         ModalOperator _operator;
         /// @brief The formula to which the operator applies.
-        LogicFormula * _formula;
+        std::unique_ptr<LogicFormula> _formula;
 
     };
 

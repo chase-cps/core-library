@@ -11,6 +11,7 @@
 
 #include <set>
 #include <map>
+#include <memory>
 
 namespace chase {
 
@@ -37,13 +38,13 @@ namespace chase {
          * distribution is characterized by a set of parameters. For instance,
          * a Gaussian distribution must specify sigma and mu parameters.
          */
-        std::map< std::string, chase::Value * > parameters;
+        std::map< std::string, std::unique_ptr<chase::Value> > parameters;
 
         /// @brief Constructor.
         Distribution(
                 distribution_type dtype,
-                Name * name = new Name("anonymous_distribution"),
-                Type * type = reinterpret_cast<Type*>(new Real()));
+                Name * name = nullptr,
+                Type * type = nullptr);
 
         /// @brief Destructor.
         ~Distribution();

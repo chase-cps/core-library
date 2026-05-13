@@ -9,6 +9,7 @@
 #include "utilities/LogicSimplificationVisitor.hh"
 #include "representation.hh"
 #include "Factory.hh"
+#include <memory>
 
 using namespace chase;
 
@@ -25,20 +26,26 @@ int LogicSimplificationVisitor::visitContract(Contract &contract)
 
     auto it = contract.assumptions.find(logic);
     if(it != contract.assumptions.end()){
-        auto spec = it->second;
+        auto spec = it->second.release();
         auto formula = static_cast< LogicFormula * >(spec);
         if(formula != nullptr){
-            it->second = _analyzeFormula(formula);
+            it->second.reset(_analyzeFormula(formula));
+            it->second->setParent(&contract);
+        } else {
+            it->second.reset(spec);
         }
     }
 
     it = contract.guarantees.find(logic);
     if(it != contract.guarantees.end()){
-        auto spec = it->second;
+        auto spec = it->second.release();
         auto formula = static_cast< LogicFormula * >(spec);
         if(formula != nullptr){
             formula->accept_visitor(*this);
-            it->second = _analyzeFormula(formula);
+            it->second.reset(_analyzeFormula(formula));
+            it->second->setParent(&contract);
+        } else {
+            it->second.reset(spec);
         }
     }
 
@@ -51,10 +58,10 @@ int LogicSimplificationVisitor::visitBinaryBooleanOperation(
     int rv = formula.getOp1()->accept_visitor(*this);
     rv |= formula.getOp2()->accept_visitor(*this);
 
-    auto op1 = formula.getOp1();
-    formula.setOp1(_analyzeFormula(op1));
-    auto op2 = formula.getOp2();
-    formula.setOp2(_analyzeFormula(op2));
+    auto op1 = formula.releaseOp1();
+    formula.setOp1(_analyzeFormula(op1.release()));
+    auto op2 = formula.releaseOp2();
+    formula.setOp2(_analyzeFormula(op2.release()));
 
     rv |= formula.getOp1()->accept_visitor(*this);
     rv |= formula.getOp2()->accept_visitor(*this);
@@ -66,9 +73,9 @@ int LogicSimplificationVisitor::visitUnaryBooleanOperation(
         UnaryBooleanFormula &formula)
 {
     int rv = formula.getOp1()->accept_visitor(*this);
-    auto op1 = formula.getOp1();
+    auto op1 = formula.releaseOp1();
 
-    formula.setOp1(_analyzeFormula(op1));
+    formula.setOp1(_analyzeFormula(op1.release()));
 
     rv |= formula.getOp1()->accept_visitor(*this);
     return rv;
@@ -81,8 +88,8 @@ int LogicSimplificationVisitor::visitLargeBooleanFormula(
     for(size_t i = 0; i < formula.operands.size(); ++i)
     {
         rv |= formula.operands[i]->accept_visitor(*this);
-        auto op = formula.operands[i];
-        formula.operands[i] = _analyzeFormula(op);
+        auto op = formula.releaseOperand(i);
+        formula.setOperand(i, _analyzeFormula(op.release()));
         rv |= formula.operands[i]->accept_visitor(*this);
     }
     return rv;
@@ -92,8 +99,8 @@ int LogicSimplificationVisitor::visitUnaryTemporalOperation(
         UnaryTemporalFormula &formula)
 {
     int rv =formula.getFormula()->accept_visitor(*this);
-    auto op1 = formula.getFormula();
-    formula.setFormula(_analyzeFormula(op1));
+    auto op1 = formula.releaseFormula();
+    formula.setFormula(_analyzeFormula(op1.release()));
     rv |= formula.getFormula()->accept_visitor(*this);
 
     return rv;
@@ -105,10 +112,10 @@ int LogicSimplificationVisitor::visitBinaryTemporalOperation(
     int rv = formula.getFormula1()->accept_visitor(*this);
     rv |= formula.getFormula2()->accept_visitor(*this);
 
-    auto op1 = formula.getFormula1();
-    formula.setFormula1(_analyzeFormula(op1));
-    auto op2 = formula.getFormula2();
-    formula.setFormula2(_analyzeFormula(op2));
+    auto op1 = formula.releaseFormula1();
+    formula.setFormula1(_analyzeFormula(op1.release()));
+    auto op2 = formula.releaseFormula2();
+    formula.setFormula2(_analyzeFormula(op2.release()));
 
     rv |= formula.getFormula1()->accept_visitor(*this);
     rv |= formula.getFormula2()->accept_visitor(*this);
@@ -118,15 +125,19 @@ int LogicSimplificationVisitor::visitBinaryTemporalOperation(
 
 LogicFormula * LogicSimplificationVisitor::_analyzeFormula(
     LogicFormula * formula ){
+    std::unique_ptr<LogicFormula> ownedFormula(formula);
     if(formula->IsA() == largeBooleanFormula_node)
     {
         auto lbf = static_cast< LargeBooleanFormula * >(formula);
         if(lbf->operands.size() == 1) {
-            return lbf->operands[0];
+            auto ret = lbf->releaseOperand(0);
+            return ret.release();
         }
         if(lbf->operands.size() == 2){
-            return And(lbf->operands[0], lbf->operands[1]);
+            auto op1 = lbf->releaseOperand(0);
+            auto op2 = lbf->releaseOperand(1);
+            return And(op1.release(), op2.release());
         }
     }
-    return formula;
+    return ownedFormula.release();
 }

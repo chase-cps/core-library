@@ -15,11 +15,7 @@ Parameter::Parameter(Type * type, Name * name) :
     _node_type = parameter_node;
 }
 
-Parameter::~Parameter()
-{
-    delete _name;
-    delete _type;
-}
+Parameter::~Parameter() = default;
 
 int Parameter::accept_visitor(chase::BaseVisitor &v)
 {
@@ -33,5 +29,4 @@ std::string Parameter::getString() {
 Parameter *Parameter::clone() {
     return nullptr;
 }
-
 

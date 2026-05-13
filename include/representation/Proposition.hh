@@ -11,6 +11,8 @@
 #include "representation/Type.hh"
 #include "representation/Value.hh"
 
+#include <memory>
+
 
 namespace chase {
 
@@ -67,15 +69,15 @@ namespace chase {
     protected:
 
         /// @brief the Type of the Proposition. I.e., Boolean.
-        Type * _type;
+        std::unique_ptr<Type> _type;
 
         /// @brief The value to which the proposition is connected.
         /// It must be typed boolean. E.g., an expression or a
         /// boolean variable.
-        Value * _value;
+        std::unique_ptr<Value> _value;
 
         /// @brief The name of the proposition.
-        Name * _name;
+        std::unique_ptr<Name> _name;
 
     };
 }

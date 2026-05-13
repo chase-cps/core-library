@@ -23,10 +23,7 @@ RealValue::RealValue( double value ) :
     setType(new Real());
 }
 
-RealValue::~RealValue()
-{
-    delete _type;
-}
+RealValue::~RealValue() = default;
 
 RealValue::RealValue( const RealValue & o ) :
     NumericValue(),

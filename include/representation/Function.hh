@@ -8,6 +8,7 @@
 #pragma once
 
 #include "representation/DataDeclaration.hh"
+#include <memory>
 #include <vector>
 
 namespace chase {
@@ -61,7 +62,7 @@ namespace chase {
         /// @brief the domain of the function. It is to be set for every
         /// argument of the function. If it is not specified (i.e., nullptr),
         /// then, any Value is considered to be accepted.
-        std::vector< Type * > _domain;
+        std::vector< std::unique_ptr<Type> > _domain;
 
 
     };

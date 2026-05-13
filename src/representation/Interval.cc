@@ -13,11 +13,7 @@
 
 using namespace chase;
 
-Interval::~Interval()
-{
-    delete _leftBound;
-    delete _rightBound;
-}
+Interval::~Interval() = default;
 
 Interval::Interval(Value *lbound, Value *rbound, bool leftOpen, bool rightOpen) :
     Value(),
@@ -27,21 +23,23 @@ Interval::Interval(Value *lbound, Value *rbound, bool leftOpen, bool rightOpen) 
     _rightOpen(rightOpen)
 {
     _node_type = interval_node;
-    if(_leftBound->getParent() != nullptr)
-        messageWarning("Already used value in left bound.", _leftBound);
-    else _leftBound->setParent(this);
+    if(_leftBound == nullptr) _leftBound.reset(new IntegerValue(0));
+    if(_rightBound == nullptr) _rightBound.reset(new IntegerValue(1));
+    if(_leftBound != nullptr && _leftBound->getParent() != nullptr)
+        messageWarning("Already used value in left bound.", _leftBound.get());
+    else if(_leftBound != nullptr) _leftBound->setParent(this);
 
-    if(_rightBound->getParent() != nullptr)
-        messageWarning("Already used value in right bound.", _rightBound);
-    else _rightBound->setParent(this);
+    if(_rightBound != nullptr && _rightBound->getParent() != nullptr)
+        messageWarning("Already used value in right bound.", _rightBound.get());
+    else if(_rightBound != nullptr) _rightBound->setParent(this);
 }
 
 Value *Interval::getLeftBound() const {
-    return _leftBound;
+    return _leftBound.get();
 }
 
 Value *Interval::getRightBound() const {
-    return _rightBound;
+    return _rightBound.get();
 }
 
 bool Interval::isLeftOpen() const {
@@ -54,6 +52,9 @@ bool Interval::isRightOpen() const {
 
 Type *Interval::getType()
 {
+    if(_leftBound == nullptr || _rightBound == nullptr)
+        return nullptr;
+
     auto ltype = _leftBound->getType()->IsA();
     auto rtype = _rightBound->getType()->IsA();
 
@@ -72,8 +73,8 @@ Type *Interval::getType()
 
 Interval *Interval::clone() {
     return new Interval(
-            _leftBound->clone(),
-            _rightBound->clone(),
+            _leftBound != nullptr ? _leftBound->clone() : nullptr,
+            _rightBound != nullptr ? _rightBound->clone() : nullptr,
             isLeftOpen(),
             isRightOpen()
             );
@@ -87,10 +88,26 @@ std::string Interval::getString() {
     std::string ret("");
     if(_leftOpen) ret += "]";
     else ret += "[";
-    ret += _leftBound->getString()
-            + ", " + _rightBound->getString();
+    if(_leftBound != nullptr) ret += _leftBound->getString();
+    else ret += "null";
+    ret += ", ";
+    if(_rightBound != nullptr) ret += _rightBound->getString();
+    else ret += "null";
     if(_rightOpen) ret += "[";
     else ret += "]";
     return ret;
 }
 
+std::unique_ptr<Value> Interval::releaseLeftBound()
+{
+    auto ret = std::move(_leftBound);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}
+
+std::unique_ptr<Value> Interval::releaseRightBound()
+{
+    auto ret = std::move(_rightBound);
+    if(ret != nullptr) ret->setParent(nullptr);
+    return ret;
+}

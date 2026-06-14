@@ -139,6 +139,58 @@ namespace chase {
         static void conjoinLogic(
                 Contract *c1, Contract *c2, Contract * r);
 
+        /// @brief Method implementing the disjunction of two contracts.
+        /// Disjunction is the least upper bound in the contract lattice:
+        /// C1 ∨ C2 = (A1 ∧ A2, G1 ∨ G2).
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param correspondences Map of the correspondences between variables
+        /// in the two contracts being composed. Each entry in the map has key
+        /// the names in the second contract, and the value is the name of the
+        /// projected variable in the first contract.
+        /// This choice improve computational complexity, as the variables of
+        /// the first contract are used as base for the composed contract.
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the disjunction of the
+        /// two.
+        static Contract * disjunction(
+                Contract * c1, Contract * c2,
+                names_projection_map & correspondences,
+                std::string name = std::string("disjunction"));
+
+        /// @brief Function performing disjunction for Logic specifications.
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param r The resulting contract.
+        static void disjoinLogic(
+                Contract *c1, Contract *c2, Contract * r);
+
+        /// @brief Method implementing the merging of two contracts.
+        /// Merging is the viewpoint fusion operation:
+        /// C1 ⊔ C2 = (A1 ∧ A2, G1 ∧ G2).
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param correspondences Map of the correspondences between variables
+        /// in the two contracts being composed. Each entry in the map has key
+        /// the names in the second contract, and the value is the name of the
+        /// projected variable in the first contract.
+        /// This choice improve computational complexity, as the variables of
+        /// the first contract are used as base for the composed contract.
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the merging of the
+        /// two.
+        static Contract * merging(
+                Contract * c1, Contract * c2,
+                names_projection_map & correspondences,
+                std::string name = std::string("merging"));
+
+        /// @brief Function performing merging for Logic specifications.
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param r The resulting contract.
+        static void mergingLogic(
+                Contract *c1, Contract *c2, Contract * r);
+
         /// @brief Method implementing the quotient of two contracts.
         /// @param c1 The first contract.
         /// @param c2 The second contract.

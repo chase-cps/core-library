@@ -284,6 +284,16 @@ Contract * Contract::quotient(
 
 void Contract::quotientLogic(
         Contract *c1, Contract *c2, Contract *r, bool synthesizable) {
+    // Quotient: C1 / C2 where C1 = (A1, G1) is the system contract,
+    // C2 = (A2, G2) is the known sub-contract.
+    // Result: the largest contract C such that C ∘ C2 ⊑ C1.
+    //
+    // A_result = A1 ∧ G2
+    // G_result (non-synthesizable) = G1 ∨ ¬A1 ∨ ¬G2
+    // G_result (synthesizable)     = ¬A2 ∨ G1  (i.e., A2 → G1)
+    //
+    // Reference: Incer, "The Algebra of Contracts" (2022), Theorem 4.3.
+
     LogicFormula *a1 = nullptr;
     LogicFormula *a2 = nullptr;
     LogicFormula *g1 = nullptr;
@@ -313,32 +323,35 @@ void Contract::quotientLogic(
         if (g2 == nullptr) messageError("Wrong format in Logic.");
     }
 
+    // Assumptions: A1 ∧ G2
     LogicFormula *assumptions = nullptr;
-    LogicFormula *guarantees = nullptr;
-
     if (a1 != nullptr && g2 != nullptr)
         assumptions = And(a1->clone(), g2->clone());
     else if (a1 == nullptr && g2 == nullptr)
         assumptions = True();
-    else if (a1 == nullptr && g2 != nullptr)
-        assumptions = a1->clone();
-    else
+    else if (a1 == nullptr)
         assumptions = g2->clone();
-
-    if (a2 != nullptr && g1 != nullptr)
-        guarantees = And(a2->clone(), g1->clone());
-    else if (a2 == nullptr && g1 == nullptr)
-        guarantees = True();
-    else if (a2 != nullptr && g1 == nullptr)
-        guarantees = a2->clone();
     else
-        guarantees = g1->clone();
+        assumptions = a1->clone();
 
-    if (!synthesizable)
-    {
-        if(a1 != nullptr)
+    // Guarantees
+    LogicFormula *guarantees = nullptr;
+    if (synthesizable) {
+        // G_result = A2 → G1 = ¬A2 ∨ G1
+        if (a2 != nullptr && g1 != nullptr)
+            guarantees = Or(Not(a2->clone()), g1->clone());
+        else if (a2 == nullptr && g1 == nullptr)
+            guarantees = True();
+        else if (a2 == nullptr)
+            guarantees = g1->clone();
+        else
+            guarantees = Not(a2->clone());
+    } else {
+        // G_result = G1 ∨ ¬A1 ∨ ¬G2
+        guarantees = (g1 != nullptr) ? g1->clone() : static_cast<LogicFormula*>(True());
+        if (a1 != nullptr)
             guarantees = Or(guarantees, Not(a1->clone()));
-        if(g2 != nullptr)
+        if (g2 != nullptr)
             guarantees = Or(guarantees, Not(g2->clone()));
     }
 
@@ -348,6 +361,154 @@ void Contract::quotientLogic(
 }
 
 
+
+
+Contract * Contract::disjunction(
+        Contract *c1, Contract *c2,
+        names_projection_map &correspondences,
+        std::string name)
+{
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    mergeDeclarations(c1, c2, res, correspondences, declaration_map);
+
+    disjoinLogic(c1, c2, res);
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
+}
+
+void Contract::disjoinLogic(Contract *c1, Contract *c2, Contract *r) {
+    // Disjunction (least upper bound):
+    // C1 ∨ C2 = (A1 ∧ A2, G1 ∨ G2)
+    // Reference: Benveniste et al. (2009), Incer (2022).
+
+    LogicFormula *a1 = nullptr, *a2 = nullptr;
+    LogicFormula *g1 = nullptr, *g2 = nullptr;
+
+    auto i = c1->assumptions.find(logic);
+    if (i != c1->assumptions.end()) {
+        a1 = dynamic_cast<LogicFormula *>(i->second);
+        if (a1 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c2->assumptions.find(logic);
+    if (i != c2->assumptions.end()) {
+        a2 = dynamic_cast<LogicFormula *>(i->second);
+        if (a2 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c1->guarantees.find(logic);
+    if (i != c1->guarantees.end()) {
+        g1 = dynamic_cast<LogicFormula *>(i->second);
+        if (g1 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c2->guarantees.find(logic);
+    if (i != c2->guarantees.end()) {
+        g2 = dynamic_cast<LogicFormula *>(i->second);
+        if (g2 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    // Assumptions: A1 ∧ A2
+    LogicFormula *assumptions = nullptr;
+    if (a1 != nullptr && a2 != nullptr)
+        assumptions = And(a1->clone(), a2->clone());
+    else if (a1 == nullptr && a2 == nullptr)
+        assumptions = True();
+    else if (a1 == nullptr)
+        assumptions = a2->clone();
+    else
+        assumptions = a1->clone();
+
+    // Guarantees: G1 ∨ G2
+    LogicFormula *guarantees = nullptr;
+    if (g1 != nullptr && g2 != nullptr)
+        guarantees = Or(g1->clone(), g2->clone());
+    else if (g1 == nullptr && g2 == nullptr)
+        guarantees = True();
+    else if (g1 == nullptr)
+        guarantees = g2->clone();
+    else
+        guarantees = g1->clone();
+
+    r->addAssumptions(logic, assumptions);
+    r->addGuarantees(logic, guarantees);
+}
+
+
+Contract * Contract::merging(
+        Contract *c1, Contract *c2,
+        names_projection_map &correspondences,
+        std::string name)
+{
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    mergeDeclarations(c1, c2, res, correspondences, declaration_map);
+
+    mergingLogic(c1, c2, res);
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
+}
+
+void Contract::mergingLogic(Contract *c1, Contract *c2, Contract *r) {
+    // Merging (viewpoint fusion):
+    // C1 ⊔ C2 = (A1 ∧ A2, G1 ∧ G2)
+    // Reference: Passerone et al. (2019), Incer (2022).
+
+    LogicFormula *a1 = nullptr, *a2 = nullptr;
+    LogicFormula *g1 = nullptr, *g2 = nullptr;
+
+    auto i = c1->assumptions.find(logic);
+    if (i != c1->assumptions.end()) {
+        a1 = dynamic_cast<LogicFormula *>(i->second);
+        if (a1 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c2->assumptions.find(logic);
+    if (i != c2->assumptions.end()) {
+        a2 = dynamic_cast<LogicFormula *>(i->second);
+        if (a2 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c1->guarantees.find(logic);
+    if (i != c1->guarantees.end()) {
+        g1 = dynamic_cast<LogicFormula *>(i->second);
+        if (g1 == nullptr) messageError("Wrong format in Logic.");
+    }
+    i = c2->guarantees.find(logic);
+    if (i != c2->guarantees.end()) {
+        g2 = dynamic_cast<LogicFormula *>(i->second);
+        if (g2 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    // Assumptions: A1 ∧ A2
+    LogicFormula *assumptions = nullptr;
+    if (a1 != nullptr && a2 != nullptr)
+        assumptions = And(a1->clone(), a2->clone());
+    else if (a1 == nullptr && a2 == nullptr)
+        assumptions = True();
+    else if (a1 == nullptr)
+        assumptions = a2->clone();
+    else
+        assumptions = a1->clone();
+
+    // Guarantees: G1 ∧ G2
+    LogicFormula *guarantees = nullptr;
+    if (g1 != nullptr && g2 != nullptr)
+        guarantees = And(g1->clone(), g2->clone());
+    else if (g1 == nullptr && g2 == nullptr)
+        guarantees = True();
+    else if (g1 == nullptr)
+        guarantees = g2->clone();
+    else
+        guarantees = g1->clone();
+
+    r->addAssumptions(logic, assumptions);
+    r->addGuarantees(logic, guarantees);
+}
 
 
 void Contract::saturate(Contract *c)

@@ -956,6 +956,44 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("declaration_map").none(false))
         .def_static("saturateLogic", &Contract::saturateLogic,
             py::arg("c").none(false))
+        .def_static("quotient", &Contract::quotient,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="quotient",
+            py::arg("synthesizable")=false)
+        .def_static("quotientLogic", &Contract::quotientLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false),
+            py::arg("synthesizable")=false)
+        .def_static("refinementCheck", &Contract::refinementCheck,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="refinement")
+        .def_static("refinementCheckLogic", &Contract::refinementCheckLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
+        .def_static("disjunction", &Contract::disjunction,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="disjunction")
+        .def_static("disjoinLogic", &Contract::disjoinLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
+        .def_static("merging", &Contract::merging,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="merging")
+        .def_static("mergingLogic", &Contract::mergingLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
         .def_readwrite("declarations", &Contract::declarations)
         .def_readwrite("assumptions", &Contract::assumptions)
         .def_readwrite("guarantees", &Contract::guarantees);

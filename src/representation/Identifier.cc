@@ -70,7 +70,7 @@ Type *Identifier::getType() {
 Identifier *Identifier::clone() {
     /// \todo Fix later in the clone method of Contract the potential
     /// inconsistencies due to cloned declarations.
-    return new Identifier(_declaration);
+    return new Identifier(_declaration, _primed);
 }
 
 bool Identifier::isPrimed() const {

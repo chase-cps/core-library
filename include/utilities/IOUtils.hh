@@ -28,7 +28,8 @@ namespace chase {
             const std::ostream & str 
             );
 
-    /// @brief Function for all the error messages.
+    /// @brief Function for all the error messages. After printing the
+    /// message, it throws a std::runtime_error.
     /// @param msg (C) string to be printed.
     /// @param object Object of the AST causing the Error.
     void messageError(
@@ -49,7 +50,8 @@ namespace chase {
             const char * msg,
             ChaseObject * object = nullptr );
 
-    /// @brief Function for all the error messages.
+    /// @brief Function for all the error messages. After printing the
+    /// message, it throws a std::runtime_error.
     /// @param msg (C) string to be printed.
     /// @param object Object of the AST causing the Error.
     void messageError(

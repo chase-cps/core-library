@@ -10,6 +10,8 @@
 
 #include "utilities/IOUtils.hh"
 
+#include <stdexcept>
+
 namespace chase{
 
     /// @brief Implementation of the baseMessage function.
@@ -38,7 +40,9 @@ namespace chase{
     {
         std::cerr << "ERROR:  \t";
         baseMessage(msg, object, std::cerr);
-        exit(-1);
+        // Throw instead of exiting, so that the library can be used from
+        // long-running programs (e.g., Python). The tools catch it in main.
+        throw std::runtime_error(msg);
     }
 
     void messageInfo(

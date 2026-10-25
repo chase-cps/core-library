@@ -12,7 +12,7 @@ The CHASE (Contract-based Heterogeneous Analysis and Systems Exploration) core l
 
 ## Prerequisites
 
-- CMake (version 3.10 or higher)
+- CMake (version 3.18 or higher)
 - C++ Compiler (supporting C++17)
 - Python 3 (for bindings)
 - pybind11
@@ -40,7 +40,9 @@ The CHASE (Contract-based Heterogeneous Analysis and Systems Exploration) core l
     ```
 
 The project is compiled in `Release` mode by default. To compile it in `Debug`
-mode, add `-DCMAKE_BUILD_TYPE=Debug` to the `cmake` command.
+mode, add `-DCMAKE_BUILD_TYPE=Debug` to the `cmake` command. When several
+Python interpreters are installed, add `-DPython_EXECUTABLE=<path_to_python>`
+to choose the one the Python bindings are built for.
 
 For the installation of the other CHASE modules, please refer to the
 [installation instructions](doc/md/installation.md) or to the

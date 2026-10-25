@@ -26,7 +26,8 @@ systems:
 `$> python3 -c "import pychase"`
 
 The modules must be used with the same version of the Python interpreter used
-to compile them. In the CHASE Docker image, `PYTHONPATH` is already set.
+to compile them. To choose the interpreter, configure each module with
+`-DPython_EXECUTABLE=<path_to_python>`. In the CHASE Docker image, `PYTHONPATH` is already set.
 
 
 [PYBIND]: https://github.com/pybind/pybind11

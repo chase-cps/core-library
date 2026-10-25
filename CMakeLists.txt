@@ -4,7 +4,7 @@
 # @author Michele Lora
 #
 
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.18)
 set(CMAKE_C_FLAGS_DEBUG "-O0 -Wall -Wextra -pedantic -ggdb -fPIC")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -Wextra -pedantic -ggdb -fPIC")
@@ -20,7 +20,9 @@ endif()
 
 project (CHASE VERSION 1.0.0)
 
-find_package(PythonLibs REQUIRED)
+# Use one Python for the headers and the module suffix (FindPython).
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)

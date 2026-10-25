@@ -19,7 +19,7 @@ The framework requires the following third party software in order to be built
 and executed:
 
 - GCC or Clang toolchain for C++ supporting the C++17 standard
-- CMake 3.10+
+- CMake 3.18+
 - Python 3, with its development headers
 - [pybind11][PYBIND]: used to build the Python interface
 - [ANTLR 4 (ANother Tool for Language Recognition) C++ Runtime library][ANTLR]:
@@ -82,7 +82,9 @@ Each module is built with CMake in the same way:
 `$> cmake --install <module>/build`
 
 The build type defaults to `Release`; pass `-DCMAKE_BUILD_TYPE=Debug` to
-obtain a debug build.
+obtain a debug build. When several Python interpreters are installed, pass
+`-DPython_EXECUTABLE=<path_to_python>` to choose the one the Python modules
+are built for.
 
 Third party dependencies are installed in the `CHASE_INSTALL_DIR/third_party`
 directory. The CHASE modules are installed in the `CHASE_INSTALL_DIR/chase`

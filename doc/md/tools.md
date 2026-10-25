@@ -58,10 +58,10 @@ CHASE, and opens a console to manipulate them.
 >   executed instead of opening the interactive console._
 > - -V _Enables verbose mode._
 
-The console commands include `show`, `compose`, `conjunction`,
-`disjunction`, `merging`, `quotient`, `separation`, `saturate`, `simplify`,
-`refinement`, `verify`, and `synthesize`; type `help` in the console for their
-description. The [DATE21 demo][DATE21] shows a complete session.
+The console commands include `show`, `compose`, `conjoin`, `disjoin`,
+`merge`, `divide` (quotient), `separate`, `saturate`, `simplify`, `refines`,
+`verify`, and `synthesize` (`conjunction`, `quotient`, and `refinement` are
+still accepted); type `help` in the console for their description. The [DATE21 demo][DATE21] shows a complete session.
 
 For the usage of [slugs][SLUGS], [GR1C][GR1C], and [nuXmv][NUXMV], we refer the
 reader to the tools documentation.

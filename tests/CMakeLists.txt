@@ -12,7 +12,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(chase_tests
     main.cc
     SystemTest.cc
-    SeparationTest.cc
+    AlgebraTest.cc
 )
 
 target_link_libraries(chase_tests

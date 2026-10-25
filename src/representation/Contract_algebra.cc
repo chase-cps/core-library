@@ -285,14 +285,17 @@ Contract * Contract::quotient(
 void Contract::quotientLogic(
         Contract *c1, Contract *c2, Contract *r, bool synthesizable) {
     // Quotient: C1 / C2 where C1 = (A1, G1) is the system contract,
-    // C2 = (A2, G2) is the known sub-contract.
-    // Result: the largest contract C such that C ∘ C2 ⊑ C1.
+    // C2 = (A2, G2) is the known sub-contract, both saturated.
+    // Result: the largest contract C such that C2 ∥ C ⊑ C1.
     //
     // A_result = A1 ∧ G2
-    // G_result (non-synthesizable) = G1 ∨ ¬A1 ∨ ¬G2
-    // G_result (synthesizable)     = ¬A2 ∨ G1  (i.e., A2 → G1)
+    // G_result = (G1 ∧ A2) ∨ ¬(A1 ∧ G2)
     //
-    // Reference: Incer, "The Algebra of Contracts" (2022), Theorem 4.3.
+    // With synthesizable set, the guarantees are G1 ∧ A2 only. The contract
+    // is the same once saturated, but the formula is easier to synthesize.
+    //
+    // Reference: Incer et al., "Quotient for Assume-Guarantee Contracts",
+    // MEMOCODE 2018, Theorem 3.5.
 
     LogicFormula *a1 = nullptr;
     LogicFormula *a2 = nullptr;
@@ -334,26 +337,20 @@ void Contract::quotientLogic(
     else
         assumptions = a1->clone();
 
-    // Guarantees
+    // Guarantees: G1 ∧ A2
     LogicFormula *guarantees = nullptr;
-    if (synthesizable) {
-        // G_result = A2 → G1 = ¬A2 ∨ G1
-        if (a2 != nullptr && g1 != nullptr)
-            guarantees = Or(Not(a2->clone()), g1->clone());
-        else if (a2 == nullptr && g1 == nullptr)
-            guarantees = True();
-        else if (a2 == nullptr)
-            guarantees = g1->clone();
-        else
-            guarantees = Not(a2->clone());
-    } else {
-        // G_result = G1 ∨ ¬A1 ∨ ¬G2
-        guarantees = (g1 != nullptr) ? g1->clone() : static_cast<LogicFormula*>(True());
-        if (a1 != nullptr)
-            guarantees = Or(guarantees, Not(a1->clone()));
-        if (g2 != nullptr)
-            guarantees = Or(guarantees, Not(g2->clone()));
-    }
+    if (g1 != nullptr && a2 != nullptr)
+        guarantees = And(g1->clone(), a2->clone());
+    else if (g1 == nullptr && a2 == nullptr)
+        guarantees = True();
+    else if (g1 == nullptr)
+        guarantees = a2->clone();
+    else
+        guarantees = g1->clone();
+
+    // Saturation: (G1 ∧ A2) ∨ ¬(A1 ∧ G2)
+    if (!synthesizable)
+        guarantees = Or(guarantees, Not(assumptions->clone()));
 
     r->addAssumptions(logic, assumptions);
     r->addGuarantees(logic, guarantees);
@@ -389,6 +386,10 @@ void Contract::separationLogic(
     // C1 = (A1, G1), C2 = (A2, G2) saturated (G includes ¬A).
     // Result: the smallest contract C such that C1 ⊑ C • C2, i.e.
     //     C1 ÷ C2 ⊑ C   iff   C1 ⊑ C • C2.
+    //
+    // Reference: Passerone, Incer, Sangiovanni-Vincentelli, "Coherent
+    // extension, composition, and merging operators in contract models for
+    // system design", ACM TECS 2019, Theorem 3.12.
     //
     // Derivation. The reciprocal C^-1 = (G, A) reverses refinement and maps
     // composition onto merging: (C ∥ C')^-1 = C^-1 • C'^-1. Hence

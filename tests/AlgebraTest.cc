@@ -14,7 +14,8 @@
 
 using namespace chase;
 
-// Semantic tests of Contract::separation on propositional contracts over the
+// Semantic tests of Contract::quotient and Contract::separation on
+// propositional contracts over the
 // Boolean variables p, q, r. A propositional formula is represented by its
 // truth table: bit i of the mask is the value of the formula under the
 // assignment p = i&1, q = i&2, r = i&4.
@@ -79,6 +80,12 @@ bool refines(AG c, AG d) {
 // Merging (A1 & A2, G1 & G2), saturated.
 AG merge(AG c1, AG c2) { return sat({c1.a & c2.a, c1.g & c2.g}); }
 
+// Composition ((A1 & A2) | !(G1 & G2), G1 & G2).
+AG compose(AG c1, AG c2) {
+    Mask g = c1.g & c2.g;
+    return {((c1.a & c2.a) | ~g) & ALL, g};
+}
+
 using Builder = std::function<LogicFormula *(Variable *, Variable *, Variable *)>;
 
 // Build a contract over fresh Boolean variables p, q, r.
@@ -134,6 +141,43 @@ void checkSeparation(Contract *c1, Contract *c2) {
         for (Mask g = 0; g <= ALL; ++g) {
             AG e = sat({a, g});
             ASSERT_EQ(refines(ks, e), refines(k1, merge(e, k2)))
+                << "Galois property violated for E = (" << a << ", " << g
+                << ")";
+        }
+}
+
+// Checks, for saturated c1 and c2:
+//  - the result equals (A1 & G2, (G1 & A2) | !(A1 & G2));
+//  - with synthesizable set, the guarantees are G1 & A2;
+//  - C2 || (C1 / C2) <= C1;
+//  - Galois property: for every saturated E,  E <= C1 / C2  iff  C2 || E <= C1.
+void checkQuotient(Contract *c1, Contract *c2) {
+    saturateIfNeeded(c1);
+    saturateIfNeeded(c2);
+    auto m = sameNames();
+    Contract *q = Contract::quotient(c1, c2, m);
+    ASSERT_NE(q, nullptr);
+    EXPECT_EQ(q->getName()->getString(), "quotient");
+
+    AG k1 = masks(c1), k2 = masks(c2), kq = masks(q);
+    Mask expA = k1.a & k2.g;
+    Mask expG = ((k1.g & k2.a) | ~expA) & ALL;
+    EXPECT_EQ(kq.a, expA);
+    EXPECT_EQ(kq.g, expG);
+
+    auto ms = sameNames();
+    AG ks = masks(Contract::quotient(c1, c2, ms, "q", true));
+    EXPECT_EQ(ks.a, expA);
+    EXPECT_EQ(ks.g, k1.g & k2.a);
+
+    Contract *cq = Contract::composition(c2, q, m);
+    EXPECT_TRUE(refines(sat(masks(cq)), k1));
+    EXPECT_TRUE(refines(compose(k2, kq), k1));
+
+    for (Mask a = 0; a <= ALL; ++a)
+        for (Mask g = 0; g <= ALL; ++g) {
+            AG e = sat({a, g});
+            ASSERT_EQ(refines(e, kq), refines(compose(k2, e), k1))
                 << "Galois property violated for E = (" << a << ", " << g
                 << ")";
         }
@@ -196,4 +240,39 @@ TEST(SeparationTest, SharedDeclarations) {
     Contract *s = Contract::separation(c1, c2, m);
     // Variables with the same name are merged, not duplicated.
     EXPECT_EQ(s->declarations.size(), 3u);
+}
+
+TEST(QuotientTest, PropositionalExample) {
+    // A1 = G1 = A2 = G2 = TRUE except A2 = q: the case where the formula
+    // without A2 in the guarantees fails.
+    auto c1 = makeContract("C1",
+        [](Variable *p, Variable *, Variable *) { return Prop(p); },
+        [](Variable *, Variable *, Variable *r) { return Prop(r); });
+    auto c2 = makeContract("C2",
+        [](Variable *, Variable *q, Variable *) { return Prop(q); },
+        [](Variable *p, Variable *, Variable *) { return Prop(p); });
+    checkQuotient(c1, c2);
+}
+
+TEST(QuotientTest, MixedConnectives) {
+    auto c1 = makeContract("C1",
+        [](Variable *p, Variable *q, Variable *) {
+            return Or(Prop(p), Prop(q)); },
+        [](Variable *p, Variable *, Variable *r) {
+            return Implies(Prop(p), Prop(r)); });
+    auto c2 = makeContract("C2",
+        [](Variable *, Variable *q, Variable *r) {
+            return And(Prop(q), Not(Prop(r))); },
+        [](Variable *p, Variable *q, Variable *) {
+            return Iff(Prop(p), Prop(q)); });
+    checkQuotient(c1, c2);
+}
+
+TEST(QuotientTest, MissingSpecificationsAreTrue) {
+    auto c1 = makeContract("C1", nullptr,
+        [](Variable *p, Variable *q, Variable *) {
+            return And(Prop(p), Prop(q)); });
+    auto c2 = makeContract("C2",
+        [](Variable *, Variable *, Variable *r) { return Prop(r); }, nullptr);
+    checkQuotient(c1, c2);
 }

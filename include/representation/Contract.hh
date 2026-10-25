@@ -192,6 +192,9 @@ namespace chase {
                 Contract *c1, Contract *c2, Contract * r);
 
         /// @brief Method implementing the quotient of two contracts.
+        /// The quotient C1 / C2 is the largest contract C such that
+        /// C2 ∥ C refines C1. For saturated contracts:
+        /// C1 / C2 = (A1 ∧ G2, (G1 ∧ A2) ∨ ¬(A1 ∧ G2)).
         /// @param c1 The first contract.
         /// @param c2 The second contract.
         /// @param correspondences Map of the correspondences between variables
@@ -201,6 +204,8 @@ namespace chase {
         /// This choice improve computational complexity, as the variables of
         /// the first contract are used as base for the composed contract.
         /// @param name The name of the resulting contract.
+        /// @param synthesizable If true, the guarantees are G1 ∧ A2, without
+        /// the saturation term.
         /// @return Pointer to a new contract that is the quotient of the
         /// two.
         static Contract * quotient(

@@ -6,9 +6,11 @@
 
 The simplest way to obtain a working installation of CHASE is the Docker image
 defined by the `Dockerfile` of this repository. It builds all the CHASE modules
-and the external tools (gr1c, slugs, and NuSMV on x86_64):
+and the external tools (gr1c, slugs, and nuXmv on x86_64; nuXmv is free for
+academic and non-commercial use, and installed only when its license is
+accepted):
 
-`$> docker build -t chase .`
+`$> docker build --build-arg ACCEPT_NUXMV_LICENSE=yes -t chase .`
 
 `$> docker run --rm -it chase`
 
@@ -38,8 +40,9 @@ be installed separately to analyze the generated specifications:
     strategies from them.
 - [slugs][SLUGS]: a stand-alone reactive synthesis tool for generalized
     reactivity(1) synthesis.
-- [NuSMV][NUSMV]: a symbolic model checker, used to verify the
-    refinement, consistency, and compatibility of contracts.
+- [nuXmv][NUXMV]: a symbolic model checker, used to verify the
+    refinement, consistency, and compatibility of contracts. [NuSMV][NUSMV]
+    reads the same files, where nuXmv cannot be used.
 
 ## Operating Systems
 The framework mostly relies on the C++17 Standard and should be portable to any
@@ -105,6 +108,7 @@ It will generate HTML and LaTeX documentation in `doc/apidoc`.
 
 [SLUGS]: https://github.com/VerifiableRobotics/slugs
 [GR1C]: https://github.com/tulip-control/gr1c
+[NUXMV]: https://nuxmv.fbk.eu/
 [NUSMV]: https://nusmv.fbk.eu/
 [ANTLR]: https://www.antlr.org/
 [PYBIND]: https://github.com/pybind/pybind11

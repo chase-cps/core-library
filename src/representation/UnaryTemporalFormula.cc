@@ -52,7 +52,7 @@ int UnaryTemporalFormula::accept_visitor(chase::BaseVisitor &v) {
 }
 
 std::string UnaryTemporalFormula::getString() {
-    std::string ret(std::to_string(_op));
+    std::string ret(chase::to_string(_op));
     if(_interval != nullptr)
         ret += _interval->getString();
     ret += "(";

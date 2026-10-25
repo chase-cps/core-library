@@ -58,19 +58,19 @@ CHASE, and opens a console to manipulate them.
 >   executed instead of opening the interactive console._
 > - -V _Enables verbose mode._
 
-The console commands include `show`, `compose`, `conjunction`, `quotient`,
-`saturate`, `simplify`, `refinement`, `verify`, and `synthesize`; type `help`
-in the console for their description. The [DATE21 demo][DATE21] shows a
-complete session.
+The console commands include `show`, `compose`, `conjunction`,
+`disjunction`, `merging`, `quotient`, `separation`, `saturate`, `simplify`,
+`refinement`, `verify`, and `synthesize`; type `help` in the console for their
+description. The [DATE21 demo][DATE21] shows a complete session.
 
-For the usage of [slugs][SLUGS], [GR1C][GR1C], and [NuSMV][NUSMV], we refer the
+For the usage of [slugs][SLUGS], [GR1C][GR1C], and [nuXmv][NUXMV], we refer the
 reader to the tools documentation.
 
 [<-- Go back to the main page][HOME]
 
 [SLUGS]: https://github.com/VerifiableRobotics/slugs
 [GR1C]: https://github.com/tulip-control/gr1c
-[NUSMV]: https://nusmv.fbk.eu/
+[NUXMV]: https://nuxmv.fbk.eu/
 [DSL_TOOL]: https://github.com/chase-cps/DSL_tool
 [LOGICS_TOOL]: https://github.com/chase-cps/logics_tool
 [DEMOS]: https://github.com/chase-cps/demos

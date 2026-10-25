@@ -1005,6 +1005,27 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("c1").none(false),
             py::arg("c2").none(false),
             py::arg("r").none(false))
+        .def_static("implication", &Contract::implication,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="implication")
+        .def_static("implicationLogic", &Contract::implicationLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
+        .def_static("coimplication", &Contract::coimplication,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="coimplication")
+        .def_static("coimplicationLogic", &Contract::coimplicationLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
+        .def_static("reciprocal", &Contract::reciprocal,
+            py::arg("c").none(false),
+            py::arg("name")="reciprocal")
         .def_readwrite("declarations", &Contract::declarations)
         .def_readwrite("assumptions", &Contract::assumptions)
         .def_readwrite("guarantees", &Contract::guarantees);

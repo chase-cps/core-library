@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "representation/Contract.hh"
+#include "representation/Variable.hh"
 #include "utilities/ClonedDeclarationVisitor.hh"
 #include "utilities/Factory.hh"
 
@@ -608,6 +609,134 @@ void Contract::mergingLogic(Contract *c1, Contract *c2, Contract *r) {
 
     r->addAssumptions(logic, assumptions);
     r->addGuarantees(logic, guarantees);
+}
+
+
+// The Logic part of assumptions or guarantees; an empty part is true.
+static LogicFormula * logicPart(std::map< semantic_domain, Specification * > & m)
+{
+    auto i = m.find(logic);
+    if (i == m.end()) return True();
+    auto f = dynamic_cast<LogicFormula *>(i->second);
+    if (f == nullptr) messageError("Wrong format in Logic.");
+    return f->clone();
+}
+
+
+Contract * Contract::implication(
+        Contract *c1, Contract *c2,
+        names_projection_map &correspondences,
+        std::string name)
+{
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    mergeDeclarations(c1, c2, res, correspondences, declaration_map);
+
+    implicationLogic(c1, c2, res);
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
+}
+
+void Contract::implicationLogic(Contract *c1, Contract *c2, Contract *r) {
+    // Implication: c1 → c2, the right adjoint of conjunction, i.e. the
+    // largest contract C such that C ∧ c1 refines c2. With c1 = (A1, G1)
+    // and c2 = (A2, G2) saturated:
+    //
+    // A_result = (A2 ∧ ¬A1) ∨ (G1 ∧ ¬G2)
+    // G_result = G2 ∨ ¬G1
+    //
+    // Reference: Incer, Benveniste, Sangiovanni-Vincentelli, "Some
+    // algebraic aspects of assume-guarantee reasoning", arXiv 2309.08875,
+    // Proposition 6 (there written C' → C with C' = c1 and C = c2).
+
+    auto a1 = logicPart(c1->assumptions);
+    auto g1 = logicPart(c1->guarantees);
+    auto a2 = logicPart(c2->assumptions);
+    auto g2 = logicPart(c2->guarantees);
+
+    auto assumptions = Or(And(a2, Not(a1)), And(g1->clone(), Not(g2->clone())));
+    auto guarantees = Or(g2, Not(g1));
+
+    r->addAssumptions(logic, assumptions);
+    r->addGuarantees(logic, guarantees);
+}
+
+
+Contract * Contract::coimplication(
+        Contract *c1, Contract *c2,
+        names_projection_map &correspondences,
+        std::string name)
+{
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    mergeDeclarations(c1, c2, res, correspondences, declaration_map);
+
+    coimplicationLogic(c1, c2, res);
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
+}
+
+void Contract::coimplicationLogic(Contract *c1, Contract *c2, Contract *r) {
+    // Coimplication: c1 ⇝ c2, the left adjoint of disjunction and the dual
+    // of the implication, i.e. the smallest contract C such that c2
+    // refines C ∨ c1. With c1 = (A1, G1) and c2 = (A2, G2) saturated:
+    //
+    // A_result = A2 ∨ ¬A1
+    // G_result = (G2 ∧ ¬G1) ∨ (A1 ∧ ¬A2)
+    //
+    // Reference: Incer, Benveniste, Sangiovanni-Vincentelli, arXiv
+    // 2309.08875, Proposition 7 (there written C' ⇝ C with C' = c1 and
+    // C = c2).
+
+    auto a1 = logicPart(c1->assumptions);
+    auto g1 = logicPart(c1->guarantees);
+    auto a2 = logicPart(c2->assumptions);
+    auto g2 = logicPart(c2->guarantees);
+
+    auto assumptions = Or(a2->clone(), Not(a1->clone()));
+    auto guarantees = Or(And(g2, Not(g1)), And(a1, Not(a2)));
+
+    r->addAssumptions(logic, assumptions);
+    r->addGuarantees(logic, guarantees);
+}
+
+
+Contract * Contract::reciprocal(Contract *c, std::string name)
+{
+    // Reciprocal: C^-1 = (G, A), the view of the environment. It reverses
+    // refinement and exchanges composition with merging (Incer,
+    // Benveniste, Sangiovanni-Vincentelli, arXiv 2309.08875, Section 2.1).
+    // The inputs of the contract are the outputs of its environment.
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    for(auto original : c->declarations) {
+        auto cloned = original->clone();
+        auto var = dynamic_cast<Variable *>(cloned);
+        if(var != nullptr) {
+            if(var->getCausality() == input) var->setCausality(output);
+            else if(var->getCausality() == output) var->setCausality(input);
+        }
+        std::pair< Declaration*, Declaration *> p(original, cloned);
+        declaration_map.insert(p);
+        res->declarations.push_back(cloned);
+    }
+
+    res->addAssumptions(logic, logicPart(c->guarantees));
+    res->addGuarantees(logic, logicPart(c->assumptions));
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
 }
 
 

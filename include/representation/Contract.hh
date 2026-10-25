@@ -252,6 +252,62 @@ namespace chase {
         static void separationLogic(
                 Contract *c1, Contract *c2, Contract * r);
 
+        /// @brief Method implementing the implication of two contracts.
+        /// Implication is the adjoint of conjunction: c1 → c2 is the
+        /// largest contract C such that C ∧ c1 refines c2. For saturated
+        /// contracts:
+        /// c1 → c2 = ((A2 ∧ ¬A1) ∨ (G1 ∧ ¬G2), G2 ∨ ¬G1).
+        /// @param c1 The first contract (the premise).
+        /// @param c2 The second contract (the conclusion).
+        /// @param correspondences Map of the correspondences between variables
+        /// in the two contracts, as for the other operations.
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the implication.
+        static Contract * implication(
+                Contract * c1, Contract * c2,
+                names_projection_map & correspondences,
+                std::string name = std::string("implication"));
+
+        /// @brief Function performing implication for Logic specifications.
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param r The resulting contract.
+        static void implicationLogic(
+                Contract *c1, Contract *c2, Contract * r);
+
+        /// @brief Method implementing the coimplication of two contracts.
+        /// Coimplication is the adjoint of disjunction and the dual of the
+        /// implication: the smallest contract C such that C ∨ c1 is refined
+        /// by c2. For saturated contracts:
+        /// c1 ⇝ c2 = (A2 ∨ ¬A1, (G2 ∧ ¬G1) ∨ (A1 ∧ ¬A2)).
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param correspondences Map of the correspondences between variables
+        /// in the two contracts, as for the other operations.
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the coimplication.
+        static Contract * coimplication(
+                Contract * c1, Contract * c2,
+                names_projection_map & correspondences,
+                std::string name = std::string("coimplication"));
+
+        /// @brief Function performing coimplication for Logic specifications.
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param r The resulting contract.
+        static void coimplicationLogic(
+                Contract *c1, Contract *c2, Contract * r);
+
+        /// @brief Method computing the reciprocal of a contract,
+        /// C^-1 = (G, A): the view of the environment. The inputs of the
+        /// contract become outputs and the outputs become inputs.
+        /// @param c The contract (saturated).
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the reciprocal.
+        static Contract * reciprocal(
+                Contract * c,
+                std::string name = std::string("reciprocal"));
+
         /// @brief Method merging the declarations of two contracts into one. It
         /// is used by the operations to create the declarations of the
         /// resulting contract when applying operations over two contracts.

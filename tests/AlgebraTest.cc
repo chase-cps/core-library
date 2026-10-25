@@ -14,7 +14,8 @@
 
 using namespace chase;
 
-// Semantic tests of Contract::quotient and Contract::separation on
+// Semantic tests of Contract::quotient, Contract::separation,
+// Contract::implication, Contract::coimplication and Contract::reciprocal on
 // propositional contracts over the
 // Boolean variables p, q, r. A propositional formula is represented by its
 // truth table: bit i of the mask is the value of the formula under the
@@ -183,6 +184,92 @@ void checkQuotient(Contract *c1, Contract *c2) {
         }
 }
 
+// Conjunction (A1 | A2, G1 & G2) and disjunction (A1 & A2, G1 | G2).
+AG conjoin(AG c1, AG c2) { return {c1.a | c2.a, c1.g & c2.g}; }
+AG disjoin(AG c1, AG c2) { return {c1.a & c2.a, c1.g | c2.g}; }
+
+// Checks, for saturated c1 and c2:
+//  - the result equals ((A2 & !A1) | (G1 & !G2), G2 | !G1) and is saturated;
+//  - Galois property: for every saturated E,  E & C1 <= C2  iff  E <= C1 -> C2.
+void checkImplication(Contract *c1, Contract *c2) {
+    saturateIfNeeded(c1);
+    saturateIfNeeded(c2);
+    auto m = sameNames();
+    Contract *r = Contract::implication(c1, c2, m);
+    ASSERT_NE(r, nullptr);
+    EXPECT_EQ(r->getName()->getString(), "implication");
+
+    AG k1 = masks(c1), k2 = masks(c2), kr = masks(r);
+    EXPECT_EQ(kr.a, ((k2.a & ~k1.a) | (k1.g & ~k2.g)) & ALL);
+    EXPECT_EQ(kr.g, (k2.g | ~k1.g) & ALL);
+    EXPECT_EQ((~kr.a & ~kr.g) & ALL, 0u) << "result not saturated";
+
+    for (Mask a = 0; a <= ALL; ++a)
+        for (Mask g = 0; g <= ALL; ++g) {
+            AG e = sat({a, g});
+            ASSERT_EQ(refines(conjoin(e, k1), k2), refines(e, kr))
+                << "Galois property violated for E = (" << a << ", " << g
+                << ")";
+        }
+}
+
+// Checks, for saturated c1 and c2:
+//  - the result equals (A2 | !A1, (G2 & !G1) | (A1 & !A2)) and is saturated;
+//  - Galois property: for every saturated E,  C2 <= E | C1  iff  C1 ~> C2 <= E.
+void checkCoimplication(Contract *c1, Contract *c2) {
+    saturateIfNeeded(c1);
+    saturateIfNeeded(c2);
+    auto m = sameNames();
+    Contract *r = Contract::coimplication(c1, c2, m);
+    ASSERT_NE(r, nullptr);
+    EXPECT_EQ(r->getName()->getString(), "coimplication");
+
+    AG k1 = masks(c1), k2 = masks(c2), kr = masks(r);
+    EXPECT_EQ(kr.a, (k2.a | ~k1.a) & ALL);
+    EXPECT_EQ(kr.g, ((k2.g & ~k1.g) | (k1.a & ~k2.a)) & ALL);
+    EXPECT_EQ((~kr.a & ~kr.g) & ALL, 0u) << "result not saturated";
+
+    for (Mask a = 0; a <= ALL; ++a)
+        for (Mask g = 0; g <= ALL; ++g) {
+            AG e = sat({a, g});
+            ASSERT_EQ(refines(k2, disjoin(e, k1)), refines(kr, e))
+                << "Galois property violated for E = (" << a << ", " << g
+                << ")";
+        }
+}
+
+// Checks the identities of the reciprocal C^-1 = (G, A):
+//  - C1 / C2 = C1 . C2^-1 and C1 % C2 = C1 || C2^-1
+//    (arXiv 2309.08875, Section 2.6);
+//  - (C^-1)^-1 = C, and inputs and outputs are exchanged.
+void checkReciprocal(Contract *c1, Contract *c2) {
+    saturateIfNeeded(c1);
+    saturateIfNeeded(c2);
+    Contract *r2 = Contract::reciprocal(c2);
+    AG k2 = masks(c2), kr = masks(r2);
+    EXPECT_EQ(kr.a, k2.g);
+    EXPECT_EQ(kr.g, k2.a);
+    AG back = masks(Contract::reciprocal(r2));
+    EXPECT_EQ(back.a, k2.a);
+    EXPECT_EQ(back.g, k2.g);
+
+    auto m = sameNames();
+    AG q = masks(Contract::quotient(c1, c2, m));
+    AG mq = sat(masks(Contract::merging(c1, r2, m)));
+    EXPECT_EQ(q.a, mq.a);
+    EXPECT_EQ(q.g, mq.g);
+    AG s = masks(Contract::separation(c1, c2, m));
+    AG cs = masks(Contract::composition(c1, r2, m));
+    EXPECT_EQ(s.a, cs.a);
+    EXPECT_EQ(s.g, cs.g);
+
+    for (auto d : r2->declarations) {
+        auto v = dynamic_cast<Variable *>(d);
+        std::string n = v->getName()->getString();
+        EXPECT_EQ(v->getCausality(), n == "r" ? input : output) << n;
+    }
+}
+
 }  // namespace
 
 TEST(SeparationTest, PropositionalExample) {
@@ -276,3 +363,34 @@ TEST(QuotientTest, MissingSpecificationsAreTrue) {
         [](Variable *, Variable *, Variable *r) { return Prop(r); }, nullptr);
     checkQuotient(c1, c2);
 }
+
+void pairs(const std::function<void(Contract *, Contract *)> &check) {
+    check(makeContract("C1",
+              [](Variable *p, Variable *, Variable *) { return Prop(p); },
+              [](Variable *, Variable *q, Variable *) { return Prop(q); }),
+          makeContract("C2",
+              [](Variable *, Variable *q, Variable *) { return Prop(q); },
+              [](Variable *, Variable *, Variable *r) { return Prop(r); }));
+    check(makeContract("C1",
+              [](Variable *p, Variable *q, Variable *) {
+                  return Or(Prop(p), Prop(q)); },
+              [](Variable *p, Variable *, Variable *r) {
+                  return Implies(Prop(p), Prop(r)); }),
+          makeContract("C2",
+              [](Variable *, Variable *q, Variable *r) {
+                  return And(Prop(q), Not(Prop(r))); },
+              [](Variable *p, Variable *q, Variable *) {
+                  return Iff(Prop(p), Prop(q)); }));
+    check(makeContract("C1", nullptr,
+              [](Variable *p, Variable *q, Variable *) {
+                  return And(Prop(p), Prop(q)); }),
+          makeContract("C2",
+              [](Variable *, Variable *, Variable *r) { return Prop(r); },
+              nullptr));
+}
+
+TEST(ImplicationTest, Examples) { pairs(checkImplication); }
+
+TEST(CoimplicationTest, Examples) { pairs(checkCoimplication); }
+
+TEST(ReciprocalTest, Identities) { pairs(checkReciprocal); }

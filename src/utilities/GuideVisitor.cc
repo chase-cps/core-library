@@ -81,7 +81,7 @@ int chase::GuideVisitor::visitConstant(chase::Constant &o) {
 }
 
 int chase::GuideVisitor::visitProposition(chase::Proposition &o) {
-    int rv = visitName(* o.getName());
+    int rv = continueVisit(o.getName());
     rv |= continueVisit(o.getType());
     rv |= continueVisit(o.getValue());
     return rv;

@@ -2,90 +2,114 @@
 
 # Requirements
 
+## Docker image
+
+The simplest way to obtain a working installation of CHASE is the Docker image
+defined by the `Dockerfile` of this repository. It builds all the CHASE modules
+and the external tools (gr1c, slugs, and NuSMV on x86_64):
+
+`$> docker build -t chase .`
+
+`$> docker run --rm -it chase`
+
+The rest of this page describes the installation from sources.
+
 ## Compilation and Dependencies
-The framework requires the following third party software in order to be built 
+The framework requires the following third party software in order to be built
 and executed:
 
-- GCC or Clang toolchain for C++:
-    - tested with *g++-9.3*
-    - any compiler supporting C++-11 should be able to compile CHASE
-- GNU Make
-- Python 3
-- [gr1c][GR1C]: a collection of tools for GR(1) synthesis,  used to check
-    realizability of GR(1) specifications and synthesize discrete control
-    strategies from them.
-- [slugs][SLUGS]: a stand-alone reactive synthesis tool for generalized 
-reactivity(1) synthesis.
+- GCC or Clang toolchain for C++ supporting the C++17 standard
+- CMake 3.10+
+- Python 3, with its development headers
+- [pybind11][PYBIND]: used to build the Python interface
 - [ANTLR 4 (ANother Tool for Language Recognition) C++ Runtime library][ANTLR]:
     ANTLR4 is a parser generator for reading, processing, executing, or
     translating structured text or binary files. Its C++ Runtime library is used
-    to parse Domain Specific Languages in CHASE.
-- Graphviz
+    to parse Domain Specific Languages in CHASE. A compatible version is
+    provided by the [third_party][THIRD_PARTY] repository.
+- Doxygen (optional): to build the API documentation
+- Graphviz (optional): to visualize the synthesized controllers
+
+The backends generate input files for the following external tools, which must
+be installed separately to analyze the generated specifications:
+
+- [gr1c][GR1C]: a collection of tools for GR(1) synthesis,  used to check
+    realizability of GR(1) specifications and synthesize discrete control
+    strategies from them.
+- [slugs][SLUGS]: a stand-alone reactive synthesis tool for generalized
+    reactivity(1) synthesis.
+- [NuSMV][NUSMV]: a symbolic model checker, used to verify the
+    refinement, consistency, and compatibility of contracts.
 
 ## Operating Systems
-The framework mostly relies on the C++11 Standard and  should be portable to any
-architecture and operating system supporting it. However, due to external
-dependencies, CHASE has been tested on:
+The framework mostly relies on the C++17 Standard and should be portable to any
+architecture and operating system supporting it. CHASE has been tested on:
 - Linux Ubuntu 20.04+
-- Windows 10 , using [*Bash on Ubuntu on Windows*][WSL] 
+- macOS
+- Windows 10, using the [Windows Subsystem for Linux][WSL]
 
 # Installation
 
 ## Preliminaries
-- Install [slugs][SLUGS].
-- Install [GR1C][GR1C].
 
+All the libraries, tools, and documentation of CHASE must be installed in the
+same directory, given by the `CHASE_INSTALL_DIR` environment variable:
 
-## Notes on ANTLR4
+`$> export CHASE_INSTALL_DIR=</absolute/path/to/install/directory>`
 
-Due to potential incompatibilites with of CHASE with some releases of ANTLR4, a
-compatible version of the sources of ANTLR4 Runtime for C++ is provided in the
-`third_party/` directory of the CHASE release. While you may want to install
-your own version fo ANTLR4, you do not need to do so to use CHASE. 
-*The compilation of CHASE takes also care of building ANTLR4 libraries.*
+In the following, `<path_to_pybind>` is the absolute path to the directory
+containing the `pybind11Config.cmake` file of your pybind11 installation.
 
-## Building CHASE
+## Installation order
 
-The compilation relies on CMake. To compile the source code, from the main
-project directory you must create a working directory:
+The modules must be installed in the following order:
 
-`$> mkdir objdir`
+1. [third_party][THIRD_PARTY] (ANTLR4 runtime, required by `DSL_tool` and `logics_tool`)
+2. [core-library][CORE]
+3. [chase-backends][BACKENDS]
+4. [DSL_tool][DSL_TOOL] and [logics_tool][LOGICS_TOOL]
 
-Move in the directory just created, run cmake and compile:
+## Building a CHASE module
 
-`$> cd objdir`
+Each module is built with CMake in the same way:
 
-`$> cmake ..`
+`$> git clone https://github.com/chase-cps/<module>`
 
-`$> make`
+`$> cmake -S <module> -B <module>/build -Dpybind11_DIR=<path_to_pybind>`
 
-Indeed, you may want to specify a installation directory through the CMake
-parameter CMAKE_INSTALL_PREFIX. Then, you can install the compiled version of
-the software:
+`$> cmake --build <module>/build -j`
 
-`$> make install`
+`$> cmake --install <module>/build`
 
-For further configurations of the compilation, please refer to the documentation
-of CMake.
+The build type defaults to `Release`; pass `-DCMAKE_BUILD_TYPE=Debug` to
+obtain a debug build.
 
+Third party dependencies are installed in the `CHASE_INSTALL_DIR/third_party`
+directory. The CHASE modules are installed in the `CHASE_INSTALL_DIR/chase`
+directory: libraries (both for the C++ and Python interfaces) in
+`CHASE_INSTALL_DIR/chase/lib`, header files in `CHASE_INSTALL_DIR/chase/include`,
+and executables in `CHASE_INSTALL_DIR/chase/bin`.
 
 ## Building the API documentation
 
-Documentation requires Doxygen. The Doxyfile is in `doc/Doxyfile`. The Makefile
-defines a target to build the API documentation:
+Documentation requires Doxygen. From the build directory of the core-library:
 
 `$> make doc`
 
 It will generate HTML and LaTeX documentation in `doc/apidoc`.
 
-N.B.: The use of the target `clean` will also delete the documentation.
-
 
 [<-- Go back to the main page][HOME]
 
 [SLUGS]: https://github.com/VerifiableRobotics/slugs
-[GR1C]: https://github.com/slivingston/gr1c
-[ANTLR]: http://www.antlr.org/
-[WSL]: https://msdn.microsoft.com/en-us/commandline/wsl/about
-[ANTLR-CPP]: https://github.com/antlr/antlr4/blob/master/doc/cpp-target.md
+[GR1C]: https://github.com/tulip-control/gr1c
+[NUSMV]: https://nusmv.fbk.eu/
+[ANTLR]: https://www.antlr.org/
+[PYBIND]: https://github.com/pybind/pybind11
+[WSL]: https://learn.microsoft.com/windows/wsl/
+[THIRD_PARTY]: https://github.com/chase-cps/third_party
+[CORE]: https://github.com/chase-cps/core-library
+[BACKENDS]: https://github.com/chase-cps/chase-backends
+[DSL_TOOL]: https://github.com/chase-cps/DSL_tool
+[LOGICS_TOOL]: https://github.com/chase-cps/logics_tool
 [HOME]: ../../README.md

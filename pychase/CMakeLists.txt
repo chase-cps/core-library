@@ -1,9 +1,9 @@
 find_package(PythonLibs REQUIRED)
 
 include_directories(
-        ${PROJECT_SOURCE_DIR}/core/include
-        ${PROJECT_SOURCE_DIR}/core/include/representation
-        ${PROJECT_SOURCE_DIR}/core/include/utilities
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/include/representation
+        ${PROJECT_SOURCE_DIR}/include/utilities
 )
 
 pybind11_add_module(

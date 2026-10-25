@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-dev pybind11-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install pybind11
+
+      - name: Configure (Ubuntu)
+        if: runner.os == 'Linux'
+        run: CHASE_INSTALL_DIR=$RUNNER_TEMP/chase cmake -S . -B build -Dpybind11_DIR=/usr/lib/cmake/pybind11
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: CHASE_INSTALL_DIR=$RUNNER_TEMP/chase cmake -S . -B build -DCMAKE_PREFIX_PATH=$(brew --prefix)
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  docker:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the Docker image
+        run: docker build -t chase .
+      - name: Run the DSL demo
+        run: |
+          docker run --rm chase bash -c '
+            dsl_tool -i DATE21/specs/template_0_unrealizable.txt -o /tmp/t -b gr1c &&
+            gr1c -r /tmp/t.spc | grep -q "Not realizable" &&
+            dsl_tool -i DATE21/specs/template_0_synthesizable.txt -o /tmp/s -b gr1c &&
+            gr1c -r /tmp/s.spc | grep -qx "Realizable."'

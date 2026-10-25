@@ -5,7 +5,6 @@
 #
 
 cmake_minimum_required (VERSION 3.10)
-set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_C_FLAGS_DEBUG "-O0 -Wall -Wextra -pedantic -ggdb -fPIC")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -Wextra -pedantic -ggdb -fPIC")
@@ -35,9 +34,6 @@ endif()
 
 # Set a default build type if none was specified
 set(default_build_type "Release")
-if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
-    set(default_build_type "Debug")
-endif()
 
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -123,9 +119,7 @@ set(chase_library_representation
     ${SRC_CHASELIB_PATH}/representation/Matrix.cc
     ${SRC_CHASELIB_PATH}/representation/Distribution.cc
 
-    ${SRC_CHASELIB_PATH}/representation/Contract_algebra.cc
     ${SRC_CHASELIB_PATH}/representation/Component.cc
-    ${SRC_CHASELIB_PATH}/representation/Distribution.cc
     )
 
 set(chase_library_utilities
@@ -161,8 +155,8 @@ add_library(chase ${chase_library})
 set_target_properties(chase PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
-set(LIB_INSTALL_DIR chase/lib  CACHE STRING ¨¨)
-set(INCLUDE_INSTALL_DIR chase  CACHE STRING ¨¨)
+set(LIB_INSTALL_DIR chase/lib  CACHE STRING "")
+set(INCLUDE_INSTALL_DIR chase  CACHE STRING "")
 
 add_custom_target(install_chase
         "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install

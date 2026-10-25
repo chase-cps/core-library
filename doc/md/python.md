@@ -1,34 +1,32 @@
 The C++ API provided by the CHASE Library can be accessed by using Python.
-The interfacing between the two languages relies on [**pybind**][PYBIND]. Pybind 
-is  already provided in the `third_party` directory, while the bindings are 
-defined in the following file: 
+The interfacing between the two languages relies on [**pybind**][PYBIND],
+while the bindings are defined in the following file:
 
-`src/pychase/bindings.cc`
+`pychase/bindings.cc`
 
-The bindings expose the same interface provided by the C++ API to Python 
-programmers. Thus, refer  to the (doxygen-based) documentation of the library 
+The bindings expose the same interface provided by the C++ API to Python
+programmers. Thus, refer to the (doxygen-based) documentation of the library
 for details about the provided functionalities.
 
-The binding is based on Python 3.  Thus, in order to use the bindings it is 
-necessary that the python 3 interpreter. Furthermore, the interpreter needs to
-have the following file in its path:
+The binding is based on Python 3. The compilation generates the `pychase`
+module, which is installed in the following directory:
 
-`chasecorebnd.cpython-36m-x86_64-linux-gnu.so`
+`$CHASE_INSTALL_DIR/chase/lib/`
 
-The file is generated during the compilation, and installed according to the
-following path:
-
-`$INSTALL_DIRECTORY/chase/lib/pylib/pychase.cpython-38-x86_64-linux-gnu.so`
+The other CHASE modules install their Python modules in the same directory:
+`pychase_backends` (chase-backends), `pychase_DSL` (DSL_tool), and
+`pychase_logicsLang` (logics_tool).
 
 Thus, it is necessary to set the `PYTHONPATH` environment variable in order to
-make the library visible to the python interpreter. For instance, in Unix-based
+make the modules visible to the python interpreter. For instance, in Unix-based
 systems:
 
-`$> export PYTHONPATH=$PYTHONPATH:$INSTALL_DIRECTORY/chase/lib/pylib/`
+`$> export PYTHONPATH=$PYTHONPATH:$CHASE_INSTALL_DIR/chase/lib/`
 
-Some examples showing the usage of the Python API are available in the 
-`demo/python_examples/` directory.
+`$> python3 -c "import pychase"`
+
+The modules must be used with the same version of the Python interpreter used
+to compile them. In the CHASE Docker image, `PYTHONPATH` is already set.
 
 
-[PYBIND]: https://github.com/pybind/pybind11 
-[BINDINGS]: src/pychase/bindings.cc
+[PYBIND]: https://github.com/pybind/pybind11

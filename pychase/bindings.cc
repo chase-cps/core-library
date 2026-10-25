@@ -272,6 +272,8 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("d"))
         .def("getString", &Identifier::getString)
         .def("getType", &Identifier::getType)
+        .def("isPrimed", &Identifier::isPrimed)
+        .def("setPrimed", &Identifier::setPrimed, py::arg("primed"))
         .def("clone", &Identifier::clone);
 
     // Expression Binding
@@ -967,6 +969,15 @@ PYBIND11_MODULE(pychase, k) {
             py::arg("c2").none(false),
             py::arg("r").none(false),
             py::arg("synthesizable")=false)
+        .def_static("separation", &Contract::separation,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("correspondences").none(false),
+            py::arg("name")="separation")
+        .def_static("separationLogic", &Contract::separationLogic,
+            py::arg("c1").none(false),
+            py::arg("c2").none(false),
+            py::arg("r").none(false))
         .def_static("refinementCheck", &Contract::refinementCheck,
             py::arg("c1").none(false),
             py::arg("c2").none(false),

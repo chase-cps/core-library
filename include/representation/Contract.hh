@@ -217,6 +217,36 @@ namespace chase {
                 Contract *c1, Contract *c2, Contract * r,
                 bool synthesizable=false);
 
+        /// @brief Method implementing the separation of two contracts.
+        /// Separation is the adjoint of merging and the dual of the
+        /// quotient: C1 ÷ C2 = (C1^-1 / C2^-1)^-1, where C^-1 = (G, A).
+        /// For saturated contracts:
+        /// C1 ÷ C2 = ((A1 ∧ G2) ∨ ¬(G1 ∧ A2), G1 ∧ A2).
+        /// It is the smallest contract C such that C1 refines C merged
+        /// with C2.
+        /// @param c1 The first contract (the contract to separate).
+        /// @param c2 The second contract (the known viewpoint).
+        /// @param correspondences Map of the correspondences between variables
+        /// in the two contracts being composed. Each entry in the map has key
+        /// the names in the second contract, and the value is the name of the
+        /// projected variable in the first contract.
+        /// This choice improve computational complexity, as the variables of
+        /// the first contract are used as base for the composed contract.
+        /// @param name The name of the resulting contract.
+        /// @return Pointer to a new contract that is the separation of the
+        /// two.
+        static Contract * separation(
+                Contract * c1, Contract * c2,
+                names_projection_map & correspondences,
+                std::string name = std::string("separation"));
+
+        /// @brief Function performing separation for Logic specifications.
+        /// @param c1 The first contract.
+        /// @param c2 The second contract.
+        /// @param r The resulting contract.
+        static void separationLogic(
+                Contract *c1, Contract *c2, Contract * r);
+
         /// @brief Method merging the declarations of two contracts into one. It
         /// is used by the operations to create the declarations of the
         /// resulting contract when applying operations over two contracts.

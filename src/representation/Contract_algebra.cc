@@ -362,6 +362,105 @@ void Contract::quotientLogic(
 
 
 
+Contract * Contract::separation(
+        Contract *c1, Contract *c2,
+        names_projection_map &correspondences,
+        std::string name)
+{
+    auto res = new Contract(name);
+
+    std::map< Declaration *, Declaration * > declaration_map;
+    mergeDeclarations(c1, c2, res,
+                      correspondences, declaration_map);
+
+    separationLogic(c1, c2, res);
+
+    ClonedDeclarationVisitor v(declaration_map);
+    res->accept_visitor(v);
+
+    return res;
+}
+
+
+
+void Contract::separationLogic(
+        Contract *c1, Contract *c2, Contract *r) {
+    // Separation: C1 ÷ C2, the adjoint of merging (•), dual of the quotient.
+    // C1 = (A1, G1), C2 = (A2, G2) saturated (G includes ¬A).
+    // Result: the smallest contract C such that C1 ⊑ C • C2, i.e.
+    //     C1 ÷ C2 ⊑ C   iff   C1 ⊑ C • C2.
+    //
+    // Derivation. The reciprocal C^-1 = (G, A) reverses refinement and maps
+    // composition onto merging: (C ∥ C')^-1 = C^-1 • C'^-1. Hence
+    //     C1 ÷ C2 = ( C1^-1 / C2^-1 )^-1.
+    // With the quotient C / C' = (A ∧ G', (A' ∧ G) ∨ ¬(A ∧ G')) applied to
+    // C1^-1 = (G1, A1) and C2^-1 = (G2, A2) one gets
+    //     C1^-1 / C2^-1 = (G1 ∧ A2, (G2 ∧ A1) ∨ ¬(G1 ∧ A2)),
+    // and taking the reciprocal:
+    //
+    // A_result = (A1 ∧ G2) ∨ ¬(G1 ∧ A2)
+    // G_result = G1 ∧ A2
+    //
+    // The result is saturated: ¬A_result implies G1 ∧ A2.
+
+    LogicFormula *a1 = nullptr;
+    LogicFormula *a2 = nullptr;
+    LogicFormula *g1 = nullptr;
+    LogicFormula *g2 = nullptr;
+
+    auto i = c1->assumptions.find(logic);
+    if (i != c1->assumptions.end()) {
+        a1 = dynamic_cast<LogicFormula *>(i->second);
+        if (a1 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    i = c2->assumptions.find(logic);
+    if (i != c2->assumptions.end()) {
+        a2 = dynamic_cast<LogicFormula *>(i->second);
+        if (a2 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    i = c1->guarantees.find(logic);
+    if (i != c1->guarantees.end()) {
+        g1 = dynamic_cast<LogicFormula *>(i->second);
+        if (g1 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    i = c2->guarantees.find(logic);
+    if (i != c2->guarantees.end()) {
+        g2 = dynamic_cast<LogicFormula *>(i->second);
+        if (g2 == nullptr) messageError("Wrong format in Logic.");
+    }
+
+    // Guarantees: G1 ∧ A2
+    LogicFormula *guarantees = nullptr;
+    if (g1 != nullptr && a2 != nullptr)
+        guarantees = And(g1->clone(), a2->clone());
+    else if (g1 == nullptr && a2 == nullptr)
+        guarantees = True();
+    else if (g1 == nullptr)
+        guarantees = a2->clone();
+    else
+        guarantees = g1->clone();
+
+    // Assumptions: (A1 ∧ G2) ∨ ¬(G1 ∧ A2)
+    LogicFormula *assumptions = nullptr;
+    if (a1 != nullptr && g2 != nullptr)
+        assumptions = And(a1->clone(), g2->clone());
+    else if (a1 == nullptr && g2 == nullptr)
+        assumptions = True();
+    else if (a1 == nullptr)
+        assumptions = g2->clone();
+    else
+        assumptions = a1->clone();
+    assumptions = Or(assumptions, Not(guarantees->clone()));
+
+    r->addAssumptions(logic, assumptions);
+    r->addGuarantees(logic, guarantees);
+}
+
+
+
 
 Contract * Contract::disjunction(
         Contract *c1, Contract *c2,

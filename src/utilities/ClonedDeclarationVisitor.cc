@@ -18,6 +18,9 @@ ClonedDeclarationVisitor::ClonedDeclarationVisitor(
 
 int ClonedDeclarationVisitor::visitIdentifier(Identifier &o) {
     auto it = _map->find(o.getDeclaration());
+    // A declaration that was not cloned (e.g. one of the system) is kept.
+    if( it == _map->end() )
+        return 1;
     auto dec = dynamic_cast< DataDeclaration* >(it->second);
     if( dec != nullptr )
         o.setDeclaration(dec);

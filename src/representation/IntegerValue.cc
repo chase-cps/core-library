@@ -63,6 +63,8 @@ std::string IntegerValue::getString()
 
 IntegerValue * IntegerValue::clone() {
     auto ret = new IntegerValue(_value);
+    // The constructor gives a type without the range of this one.
+    delete ret->getType();
     ret->setType(_type->clone());
     return ret;
 }

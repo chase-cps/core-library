@@ -20,6 +20,7 @@ ModalFormula::ModalFormula(ModalOperator op, LogicFormula * formula) :
 }
 
 ModalFormula::~ModalFormula() {
+    delete _formula;
 }
 
 ModalOperator ModalFormula::getOperator()

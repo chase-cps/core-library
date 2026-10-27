@@ -99,9 +99,8 @@ Expression * chase::GT(Value *op1, Value *op2) {
 
 Proposition * chase::Prop( Variable * var )
 {
-    auto prop = new Proposition(new Identifier(var));
-    prop->setName(new Name(var->getName()->getString()));
-    return prop;
+    // The constructor names the proposition after the variable.
+    return new Proposition(new Identifier(var));
 }
 
 Proposition * chase::Prop(Expression * exp)

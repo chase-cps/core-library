@@ -53,4 +53,7 @@ UnaryBooleanFormula * UnaryBooleanFormula::clone()
     return new UnaryBooleanFormula(_op, _op1->clone());
 }
 
-UnaryBooleanFormula::~UnaryBooleanFormula() = default;
+UnaryBooleanFormula::~UnaryBooleanFormula()
+{
+    delete _op1;
+}

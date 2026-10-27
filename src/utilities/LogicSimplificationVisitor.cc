@@ -121,11 +121,21 @@ LogicFormula * LogicSimplificationVisitor::_analyzeFormula(
     if(formula->IsA() == largeBooleanFormula_node)
     {
         auto lbf = static_cast< LargeBooleanFormula * >(formula);
-        if(lbf->operands.size() == 1) {
-            return lbf->operands[0];
+        LogicFormula * ret = nullptr;
+        bool and_or = lbf->getOp() == op_and || lbf->getOp() == op_or;
+        if(lbf->operands.size() == 1 && and_or) {
+            ret = lbf->operands[0];
+            ret->setParent(nullptr);
         }
-        if(lbf->operands.size() == 2){
-            return And(lbf->operands[0], lbf->operands[1]);
+        else if(lbf->operands.size() == 2 && lbf->getOp() == op_and)
+            ret = And(lbf->operands[0], lbf->operands[1]);
+        else if(lbf->operands.size() == 2 && lbf->getOp() == op_or)
+            ret = Or(lbf->operands[0], lbf->operands[1]);
+        if(ret != nullptr) {
+            // The operands are moved to ret: free only the old node.
+            lbf->operands.clear();
+            delete lbf;
+            return ret;
         }
     }
     return formula;

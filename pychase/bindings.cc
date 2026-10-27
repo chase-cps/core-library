@@ -1090,6 +1090,18 @@ PYBIND11_MODULE(pychase, k) {
         "Wrapper for the Chase utilities library.");
 
     /**
+    * MEMORY
+    */
+
+    // The Python objects never free the CHASE objects (py::nodelete), since
+    // the objects given to CHASE belong to their parent. destroy frees an
+    // object that has no parent (e.g. a System, or the result of an
+    // operation) with everything it owns. The object, its parts, and the
+    // Python objects that refer to them must not be used afterwards.
+    u.def("destroy", [](ChaseObject * object) { delete object; },
+            py::arg("object").none(false));
+
+    /**
     * SIMPLIFY
     */
 

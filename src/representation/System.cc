@@ -26,6 +26,7 @@ System::~System() {
   for (auto component : _components) {
     delete component;
   }
+  delete _name;
 }
 
 void System::addDeclaration(Declaration *declaration) {

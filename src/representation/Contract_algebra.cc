@@ -767,11 +767,8 @@ void Contract::saturateLogic(Contract * c )
             messageError("Non logic formula in temporal logic domain");
     }
 
-    if(assumptions != nullptr ) {
-        guarantees = Or(Not(assumptions->clone()), guarantees);
-    }else{
+    if(assumptions == nullptr )
         return; // No saturation necessary.
-    }
 
     if( guarantees == nullptr )
         // Then, create new guarantees negating the
@@ -783,9 +780,9 @@ void Contract::saturateLogic(Contract * c )
     }
     else
     {
-        auto parent = guarantees->getParent();
+        guarantees = Or(Not(assumptions->clone()), guarantees);
         g->second = guarantees;
-        guarantees->setParent(parent);
+        guarantees->setParent(c);
     }
 }
 
@@ -843,20 +840,16 @@ void Contract::refinementCheckLogic(Contract *c1, Contract *c2, Contract *r) {
 
 
     /// \todo Reason about correctness in the case one is a nullptr.
-    if( a1 == nullptr )
-        a1 = True();
-    if( a2 == nullptr )
-        a2 = True();
-    auto assumptions = Implies(a2, a1);
-
-    if( g1 == nullptr )
-        g1 = True();
-    if( g2 == nullptr )
-        g2 = True();
+    // The formulas of c1 and c2 are cloned: the result owns its formulas.
+    a1 = a1 == nullptr ? True() : a1->clone();
+    a2 = a2 == nullptr ? True() : a2->clone();
+    g1 = g1 == nullptr ? True() : g1->clone();
+    g2 = g2 == nullptr ? True() : g2->clone();
 
     g1 = Or(g1, Not(a1->clone()));
     g2 = Or(g2, Not(a2->clone()));
 
+    auto assumptions = Implies(a2, a1);
     auto guarantees = Implies(g1, g2);
     r->addAssumptions(logic, assumptions);
     r->addGuarantees(logic, guarantees);

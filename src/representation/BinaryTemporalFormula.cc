@@ -90,4 +90,9 @@ void BinaryTemporalFormula::setInterval(Interval *interval) {
     _interval = interval;
 }
 
-BinaryTemporalFormula::~BinaryTemporalFormula() = default;
+BinaryTemporalFormula::~BinaryTemporalFormula()
+{
+    delete _formula1;
+    delete _formula2;
+    delete _interval;
+}

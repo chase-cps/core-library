@@ -19,8 +19,6 @@ Expression::Expression() :
     _op2(nullptr)
 {
     _node_type = expression_node;
-    _op1->setParent(this);
-    _op2->setParent(this);
 }
 
 Expression::Expression(Operator op, Value *op1, Value *op2 ) :
@@ -30,12 +28,15 @@ Expression::Expression(Operator op, Value *op1, Value *op2 ) :
     _op2(op2)
 {
     _node_type = expression_node;
-    _op1->setParent(this);
-    _op2->setParent(this);
+    if(_op1 != nullptr) _op1->setParent(this);
+    if(_op2 != nullptr) _op2->setParent(this);
 }
 
 Expression::~Expression()
 {
+    delete _op1;
+    delete _op2;
+    delete _type;
 }
 
 
@@ -84,14 +85,19 @@ int Expression::accept_visitor(BaseVisitor &v )
 
 Type * Expression::getType()
 {
-    if( _op >= op_eq && _op <= op_ge )
-        return new Boolean();
+    // The type of a relation is kept, so that the caller does not free it.
+    if( _op >= op_eq && _op <= op_ge ) {
+        if(_type == nullptr) setType(new Boolean());
+        return _type;
+    }
     else
         return nullptr;
     /// \todo Fix this to find the actual type.
 }
 
 Expression *Expression::clone() {
-    return new Expression(_op, _op1->clone(), _op2->clone());
+    return new Expression(_op,
+            _op1 != nullptr ? _op1->clone() : nullptr,
+            _op2 != nullptr ? _op2->clone() : nullptr);
 }
 

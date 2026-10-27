@@ -27,6 +27,7 @@ Constant::~Constant()
 {
     if(_name != nullptr) delete _name;
     if(_type != nullptr) delete _type;
+    delete _value;
 }
 
 Constant::Constant( const Constant &o ) :

@@ -21,6 +21,8 @@ Proposition::Proposition() :
 Proposition::~Proposition()
 {
     delete _type;
+    delete _value;
+    delete _name;
 }
 
 Proposition::Proposition(Value *v) :

@@ -17,7 +17,14 @@ Contract::Contract( std::string name ) :
     _node_type = contract_node;
 }
 
-Contract::~Contract() = default;
+Contract::~Contract()
+{
+    // The contract owns its name, declarations, and formulas.
+    delete _name;
+    for(auto d : declarations) delete d;
+    for(auto & a : assumptions) delete a.second;
+    for(auto & g : guarantees) delete g.second;
+}
 
 int Contract::accept_visitor(chase::BaseVisitor &v) {
     return v.visitContract(*this);

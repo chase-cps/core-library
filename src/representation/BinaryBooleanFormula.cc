@@ -63,4 +63,8 @@ BinaryBooleanFormula *BinaryBooleanFormula::clone()
     return new BinaryBooleanFormula(_op, _op1->clone(), _op2->clone());
 }
 
-BinaryBooleanFormula::~BinaryBooleanFormula() = default;
+BinaryBooleanFormula::~BinaryBooleanFormula()
+{
+    delete _op1;
+    delete _op2;
+}

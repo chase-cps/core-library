@@ -36,7 +36,10 @@ LargeBooleanFormula::LargeBooleanFormula(BooleanOperator op ) :
     }
 }
 
-LargeBooleanFormula::~LargeBooleanFormula() = default;
+LargeBooleanFormula::~LargeBooleanFormula()
+{
+    for(auto operand : operands) delete operand;
+}
 
 BooleanOperator LargeBooleanFormula::getOp() const {
     return _op;

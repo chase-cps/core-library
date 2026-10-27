@@ -74,4 +74,8 @@ void UnaryTemporalFormula::setInterval(Interval *interval) {
     _interval = interval;
 }
 
-UnaryTemporalFormula::~UnaryTemporalFormula() = default;
+UnaryTemporalFormula::~UnaryTemporalFormula()
+{
+    delete _formula;
+    delete _interval;
+}

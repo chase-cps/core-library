@@ -79,7 +79,8 @@ std::string BinaryTemporalFormula::getString() {
 BinaryTemporalFormula *BinaryTemporalFormula::clone()
 {
     return new BinaryTemporalFormula(
-            _op, _formula1->clone(), _formula2->clone());
+            _op, _formula1->clone(), _formula2->clone(),
+            _interval != nullptr ? _interval->clone() : nullptr);
 }
 
 Interval *BinaryTemporalFormula::getInterval() const {

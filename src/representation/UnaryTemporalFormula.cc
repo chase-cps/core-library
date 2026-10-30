@@ -63,7 +63,8 @@ std::string UnaryTemporalFormula::getString() {
 }
 
 UnaryTemporalFormula *UnaryTemporalFormula::clone() {
-    return new UnaryTemporalFormula(_op, _formula->clone());
+    return new UnaryTemporalFormula(_op, _formula->clone(),
+            _interval != nullptr ? _interval->clone() : nullptr);
 }
 
 Interval *UnaryTemporalFormula::getInterval() const {
